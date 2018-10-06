@@ -43,7 +43,9 @@ conda install numpy scipy matplotlib cython
 conda install -c conda-forge opencv
 
 # run test code
+echo
+echo "Running test code, press q to exit"
 python test.py
 
 # Done
-source ~/.bashrc
+exec bash
