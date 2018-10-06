@@ -53,6 +53,6 @@ Then you should be able to run test code using:
 
 The code should be able to indicate the green ball in the test picture
 
-If you have ros kinetic installed which may conflict with openCV, you may need to delete openCV installed by ros usin:
+If you have ros kinetic installed which may conflict with openCV, you may need to delete openCV installed by ros using:
 
     rm /opt/ros/kinetic/lib/python2.7/dist-packages/cv2.so
