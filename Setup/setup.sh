@@ -40,7 +40,7 @@ source activate SAUVC
 echo -e "\nInstalling dependencies..."
 pip install imutils
 conda install numpy scipy matplotlib cython
-conda install -c menpo opencv3
+conda install -c conda-forge opencv
 
 # run test code
 python test.py
