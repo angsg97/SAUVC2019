@@ -58,7 +58,8 @@ class BallTracker(ITrackingCore):
         # (x, y) center of the ball
         cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
                                 cv2.CHAIN_APPROX_SIMPLE)
-        cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+        #cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+        cnts=cnts[1]
         center = None
 
         # only proceed if at least one contour was found
