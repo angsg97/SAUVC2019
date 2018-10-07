@@ -3,7 +3,8 @@ import time
 from abc import ABCMeta, abstractclassmethod
 import cv2
 import imutils
-
+import network
+import numpy as np
 
 class ITrackingCore(metaclass=ABCMeta):
     @abstractclassmethod
@@ -92,19 +93,24 @@ class CVThread(threading.Thread):
     """ Thread to manange openCV activities"""
 
     def __init__(self, tracking_cores: [(ITrackingCore, str)],
-                 video_stream, enable_imshow=False, camera_resolution=640):
+                 video_stream, enable_imshow=False, camera_resolution=640, server_port=None):
         threading.Thread.__init__(self)
         self.tracking_cores = tracking_cores
         self.video_stream = video_stream
         self.enable_imshow = enable_imshow
         self.camera_resolution = camera_resolution
         self.result_dict = {}
+        self.server_enabled = not server_port is None
+        self.server_port = server_port
 
     def get_result(self, name):
         return self.result_dict.get(name, (None, None, None))
 
     def run(self):
         vs = self.video_stream.start()
+        if self.server_enabled:
+            server = network.Server(3333)
+            server.start()
         while True:
             frame = vs.read()
 
@@ -114,10 +120,28 @@ class CVThread(threading.Thread):
 
             frame = imutils.resize(frame, width=self.camera_resolution)
 
+            # get the name of item required by server
+            server_required_name, server_required_index = None, None
+            if self.server_enabled:
+                required_key = server.get_request()
+                if not required_key is None:
+                    splited_key = required_key.split(',')
+                    if len(splited_key) == 2:
+                        server_required_name = splited_key[0]
+                        server_required_index = int(splited_key[1])
+
             for core, name in self.tracking_cores:
                 (x, y, size, frames) = core.find(frame.copy())
-                # dict in python is thread safe
                 self.result_dict[name] = (x, y, size)
+
+                # encode and send frame to client
+                if name == server_required_name and not server_required_index is None and len(frames) > server_required_index:
+                    img_encode = cv2.imencode('.jpg', frames[server_required_index])[1]
+                    data_encode = np.array(img_encode)
+                    str_encode = data_encode.tostring(np.uint8)
+                    server.offer_data(required_key, str_encode)
+
+                # show frames in desktop is enabled
                 if self.enable_imshow:
                     for i, f in enumerate(frames):
                         cv2.imshow(name + ": " + str(i), f)

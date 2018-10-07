@@ -6,7 +6,7 @@ from tracking import *
 def main():
     cv = CVThread([(ColorDetector(), "ColorDetector"),
                    (BallTracker((8, 180, 110), (19, 255, 160)), "OrangeTracker")],
-                  VideoStream(src=0), True)
+                  VideoStream(src=0), enable_imshow=False, server_port=3333)
     cv.start()
     while True:
         print(str(cv.get_result("OrangeTracker")))
