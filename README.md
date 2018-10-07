@@ -18,22 +18,22 @@ To get lastest update, simplely run
 
 To publish your changes, please proceed in the following order
 
-    # 1. get latest update
-    git pull
-
-    # 2. check conflict, test code (never push without testing)
-
-    # 3. check what you are going to upload, using
+    # 1. check what you are going to upload, using
     git status  # show all changed files
     git diff    # show all changed lines
 
-    # 3. commit your changes
+    # 2. commit your changes
     git commit -a -m "(Explain what you did?)" # this will upload all changes in files, or
     # if you want to add new files or only want to upload specific changes
     # git add file1, file2 ...(files that you want to upload)
     # git commit -m "(Explain what you did?)"
 
-    # 4. push changes to server
+    # 3. get latest update
+    git pull
+
+    # 4. check conflict, test code (never push without testing)
+
+    # 5. push changes to server
     git push
 
 ### Environment
