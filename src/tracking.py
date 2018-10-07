@@ -6,6 +6,7 @@ import imutils
 import network
 import numpy as np
 
+
 class ITrackingCore(metaclass=ABCMeta):
     @abstractclassmethod
     def find(self, frame):
@@ -15,7 +16,8 @@ class ITrackingCore(metaclass=ABCMeta):
             frame: an openCV frame in BGR
 
         Return:
-            (x, y, size, frames) the location of the object relative to center(in pixel) and frames for debug
+            (x, y, size, frames)
+                the location of the object relative to center(in pixel) and frames for debug
         """
         pass
 
@@ -45,7 +47,7 @@ class BallTracker(ITrackingCore):
         self.color_upper = color_hsv_upper
 
     def find(self, frame):
-        height, width, _ = frame.shape
+        _, width, _ = frame.shape
         # convert it to the HSV
         blurred = cv2.GaussianBlur(frame, (11, 11), 0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
@@ -60,7 +62,7 @@ class BallTracker(ITrackingCore):
         cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
                                 cv2.CHAIN_APPROX_SIMPLE)
         #cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-        cnts=cnts[1]
+        cnts = cnts[1]
         center = None
 
         # only proceed if at least one contour was found
@@ -103,16 +105,21 @@ class CVThread(threading.Thread):
         self.result_dict = {}
         self.server_enabled = not server_port is None
         self.server_port = server_port
+        self.stopped = True
 
     def get_result(self, name):
         return self.result_dict.get(name, (None, None, None))
 
+    def stop(self):
+        self.stopped = True
+
     def run(self):
+        self.stopped = False
         vs = self.video_stream.start()
         if self.server_enabled:
             server = network.Server(3333)
             server.start()
-        while True:
+        while not self.stopped:
             frame = vs.read()
 
             if frame is None:
@@ -136,11 +143,14 @@ class CVThread(threading.Thread):
                 self.result_dict[name] = (x, y, size)
 
                 # encode and send frame to client
-                if name == server_required_name and not server_required_index is None and len(frames) > server_required_index:
-                    img_encode = cv2.imencode('.jpg', frames[server_required_index])[1]
+                if name == server_required_name\
+                        and not server_required_index is None\
+                        and len(frames) > server_required_index:
+                    img_encode = cv2.imencode(
+                        '.jpg', frames[server_required_index])[1]
                     data_encode = np.array(img_encode)
                     str_encode = data_encode.tostring(np.uint8)
-                    server.offer_data(required_key, str_encode)
+                    server.offer_data(str_encode)
 
                 # show frames in desktop is enabled
                 if self.enable_imshow:
@@ -154,5 +164,8 @@ class CVThread(threading.Thread):
                 break
 
             time.sleep(0.01)
-
+        
         vs.stop()
+        if self.server_enabled:
+            server.stop()
+        print("CV thread exited")
