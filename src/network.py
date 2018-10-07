@@ -11,7 +11,7 @@ class Client():
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.address, self.port))
         s.send(key.encode())
-        data = s.recv(4096)
+        data = s.recv(32768)
         while True:
             new_data = s.recv(32768)
             if new_data is None or len(new_data) == 0:
@@ -59,15 +59,12 @@ class Server(threading.Thread):
         self.waitting_for = None
 
     def tcplink(self, sock, _):
-        sock.settimeout(3)
-        try:
-            data = sock.recv(128)
+        data = sock.recv(128)
+        if not data is None and not self.stopped:
+            key = bytes.decode(data)
+            self.waitting_for = key
+            self.data_prepared_event = threading.Event()
+            self.data_prepared_event.wait()
             if not data is None:
-                key = bytes.decode(data)
-                self.waitting_for = key
-                self.data_prepared_event = threading.Event()
-                self.data_prepared_event.wait()
-                if not data is None:
-                    sock.send(self.data)
-        finally:
-            sock.close()
+                sock.send(self.data)
+        sock.close()
