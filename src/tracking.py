@@ -164,8 +164,7 @@ class CVThread(threading.Thread):
                 break
 
             time.sleep(0.01)
-        
+
         vs.stop()
         if self.server_enabled:
             server.stop()
-        print("CV thread exited")

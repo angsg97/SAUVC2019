@@ -25,7 +25,7 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
-        print("Main thread exited")
+        print("Stopping remaining threads...")
         cv.stop()
 
 if __name__ == '__main__':

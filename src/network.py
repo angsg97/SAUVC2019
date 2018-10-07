@@ -35,18 +35,20 @@ class Server(threading.Thread):
 
     def run(self):
         self.stopped = False
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(('0.0.0.0', self.port))
-        sock.settimeout(3)
-        sock.listen(5)
-        while not self.stopped:
-            try:
-                sock, addr = sock.accept()
-                threading.Thread(target=Server.tcplink, args=(self, sock, addr)).start()
-            except socket.timeout:
-                pass
-        sock.close()
-        print("Server thread exited")
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.bind(('0.0.0.0', self.port))
+        server_socket.settimeout(3)
+        try:
+            server_socket.listen(5)
+            while not self.stopped:
+                try:
+                    sock, addr = server_socket.accept()
+                    threading.Thread(target=Server.tcplink, args=(self, sock, addr)).start()
+                except socket.timeout:
+                    pass
+        finally:
+            self.data_prepared_event.set()
+            server_socket.close()
 
     def get_request(self):
         return self.waitting_for
@@ -57,12 +59,15 @@ class Server(threading.Thread):
         self.waitting_for = None
 
     def tcplink(self, sock, _):
-        data = sock.recv(128)
-        if not data is None:
-            key = bytes.decode(data)
-            self.waitting_for = key
-            self.data_prepared_event = threading.Event()
-            self.data_prepared_event.wait()
-            sock.send(self.data)
-            self.data = None
-        sock.close()
+        sock.settimeout(3)
+        try:
+            data = sock.recv(128)
+            if not data is None:
+                key = bytes.decode(data)
+                self.waitting_for = key
+                self.data_prepared_event = threading.Event()
+                self.data_prepared_event.wait()
+                if not data is None:
+                    sock.send(self.data)
+        finally:
+            sock.close()
