@@ -12,7 +12,12 @@ class Client():
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.address, self.port))
         s.send(key.encode())
-        data = s.recv(4096000)
+        data = s.recv(4096)
+        while True:
+            new_data = s.recv(32768)
+            if new_data is None or len(new_data) == 0:
+                break
+            data += new_data
         s.close()
         return data
 
