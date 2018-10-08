@@ -4,11 +4,7 @@ Repositoryfor SUTD SAUVC 2019 team
 ## Guide
 ### Useful Git Tips
 
-To make things easier, I will add all software team members' public key to deploy keys so that we can push code directly to this repository
-
-To get your ssh public key, run Setup/get-pubKey.sh , then you should get a key start with "ssh-rsa"
-
-After your key is added to project deploy keys, you should be able to clone this project using ssh (if you used https to clone this project before, please delete it and do it with ssh. This will allow you to push code)
+After you accept the invite linnk and become a collaborator, you should be able to clone this project using ssh (if you used https to clone this project before, please delete it and do it with ssh. This will allow you to push code)
 
     git clone git@github.com:heyuhang0/SAUVC2019.git
 
