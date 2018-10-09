@@ -15,12 +15,15 @@ def main():
         while True:
             position = cv.get_result("OrangeTracker")
             print(str(position))
-            if position[0] < -50:
-                mcu.turn_right()
-            elif position[0] > 50:
-                mcu.turn_left()
+            if position[0] is None:
+                mcu.turn_right() # turn to search object
             else:
-                mcu.forward()
+                if position[0] < -50:
+                    mcu.turn_right()
+                elif position[0] > 50:
+                    mcu.turn_left()
+                else:
+                    mcu.forward()
             time.sleep(0.1)
     except KeyboardInterrupt:
         pass
