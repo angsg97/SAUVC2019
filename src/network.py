@@ -27,7 +27,7 @@ class Server(threading.Thread):
         self.port = port
         self.waitting_for = None
         self.data = None
-        self.data_prepared_event = None
+        self.data_prepared_event = threading.Event()
         self.stopped = True
 
     def stop(self):
@@ -63,8 +63,8 @@ class Server(threading.Thread):
         if not data is None and not self.stopped:
             key = bytes.decode(data)
             self.waitting_for = key
-            self.data_prepared_event = threading.Event()
             self.data_prepared_event.wait()
+            self.data_prepared_event = threading.Event()
             if not data is None:
                 sock.send(self.data)
         sock.close()
