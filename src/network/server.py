@@ -7,7 +7,7 @@ class Server(threading.Thread):
     def __init__(self, port):
         threading.Thread.__init__(self)
         self.port = port
-        self.waitting_for = None
+        self.waitting_for = {}
         self.data = None
         self.data_prepared_event = threading.Event()
         self.stopped = True
@@ -24,30 +24,31 @@ class Server(threading.Thread):
             server_socket.listen(5)
             while not self.stopped:
                 try:
-                    sock, addr = server_socket.accept()
+                    sock, _ = server_socket.accept()
                     threading.Thread(target=Server.tcplink,
-                                     args=(self, sock, addr)).start()
+                                     args=(self, sock)).start()
                 except socket.timeout:
                     pass
         finally:
             self.data_prepared_event.set()
             server_socket.close()
 
-    def get_request(self):
-        return self.waitting_for
+    def get_requests(self):
+        return self.waitting_for.keys()
 
-    def offer_data(self, data):
-        self.data = data
+    def offer_data(self, key, data):
+        self.waitting_for[key] = data
         self.data_prepared_event.set()
-        self.waitting_for = None
+        self.data_prepared_event = threading.Event()
 
-    def tcplink(self, sock, _):
-        data = sock.recv(128)
-        if not data is None and not self.stopped:
-            key = bytes.decode(data)
-            self.waitting_for = key
-            self.data_prepared_event.wait()
-            self.data_prepared_event = threading.Event()
-            if not data is None:
-                sock.send(self.data)
+    def tcplink(self, sock):
+        recv = sock.recv(128)
+        if not recv is None and not self.stopped:
+            key = bytes.decode(recv)
+            self.waitting_for[key] = None
+            while True:
+                self.data_prepared_event.wait()
+                if not self.waitting_for[key] is None:
+                    sock.send(self.waitting_for[key])
+                    break
         sock.close()

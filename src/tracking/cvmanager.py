@@ -38,6 +38,12 @@ class CVManager(threading.Thread):
     def stop(self):
         self.stopped = True
 
+    @staticmethod
+    def encode(frame):
+        img_encode = cv2.imencode('.jpg', frame)[1]
+        data_encode = np.array(img_encode)
+        return data_encode.tostring(np.uint8)
+
     def run(self):
         self.stopped = False
         vs = self.video_stream.start()
@@ -53,15 +59,8 @@ class CVManager(threading.Thread):
 
             frame = imutils.resize(frame, width=self.camera_resolution)
 
-            # get the name of item required by server
-            server_required_name, server_required_index = None, None
-            if self.server_enabled:
-                required_key = server.get_request()
-                if not required_key is None:
-                    splited_key = required_key.split(',')
-                    if len(splited_key) == 2:
-                        server_required_name = splited_key[0]
-                        server_required_index = int(splited_key[1])
+            # get the names of items required by server
+            server_requests = server.get_requests() if self.server_enabled else []
 
             for name in self.tracking_cores:
                 if not self.tracking_cores_enabled[name]:
@@ -70,20 +69,14 @@ class CVManager(threading.Thread):
                 (x, y, size, frames) = self.tracking_cores[name].find(frame.copy())
                 self.tracking_cores_result[name] = (x, y, size)
 
-                # encode and send frame to client
-                if name == server_required_name\
-                        and not server_required_index is None\
-                        and len(frames) > server_required_index:
-                    img_encode = cv2.imencode(
-                        '.jpg', frames[server_required_index])[1]
-                    data_encode = np.array(img_encode)
-                    str_encode = data_encode.tostring(np.uint8)
-                    server.offer_data(str_encode)
-
-                # show frames in desktop is enabled
-                if self.enable_imshow:
-                    for i, f in enumerate(frames):
-                        cv2.imshow(name + ": " + str(i), f)
+                for i, f in enumerate(frames):
+                    frame_name = name + "," + str(i)
+                    # encode and send frame to client
+                    if frame_name in server_requests:
+                        server.offer_data(frame_name, CVManager.encode(f))
+                    # show frames in desktop is enabled
+                    if self.enable_imshow:
+                        cv2.imshow(frame_name, f)
 
             cv2.waitKey(1)
 
