@@ -10,12 +10,11 @@ from tracking import BallTracker
 
 
 def main():
-    """ Entry of the program """
-    cv = CVManager([(ColorDetector(), "ColorDetector"),
-                    (BallTracker((8, 180, 110), (19, 255, 160)), "OrangeTracker")],
-                   VideoStream(src=0),
-                   enable_imshow=False,
-                   server_port=3333)
+    cv = CVManager(VideoStream(src=0),  # choose the first web camera as the source
+                   enable_imshow=True,  # enable image show windows
+                   server_port=3333)    # start stream server at port 3333
+    cv.add_core("ColorDetector", ColorDetector(), True) # add a color detector core and enable it
+    cv.add_core("OrangeTracker", BallTracker((8, 180, 110), (19, 255, 160)), True)
     cv.start()
     try:
         while True:

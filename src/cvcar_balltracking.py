@@ -1,20 +1,18 @@
 import time
 from imutils.video import VideoStream
 from tracking import CVManager
-from tracking import ColorDetector
 from tracking import BallTracker
 from cvcar import MCU
 
 
 def main():
     mcu = MCU(range(35, 39))
-    cv = CVManager([(ColorDetector(), "ColorDetector"),
-                    (BallTracker((29, 86, 6), (64, 255, 255)), "OrangeTracker")],
-                   VideoStream(src=0), enable_imshow=False, server_port=3333)
+    cv = CVManager(VideoStream(src=0), server_port=3333)
+    cv.add_core("Tracker", BallTracker((29, 86, 6), (64, 255, 255)), True)
     cv.start()
     try:
         while True:
-            position = cv.get_result("OrangeTracker")
+            position = cv.get_result("Tracker")
             print(str(position))
             if position[0] is None:
                 mcu.turn_right()  # turn to search object

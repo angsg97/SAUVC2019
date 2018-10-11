@@ -1,5 +1,4 @@
 import threading
-import time
 import numpy as np
 import imutils
 import cv2
@@ -10,20 +9,31 @@ from tracking.cores import ITrackingCore
 class CVManager(threading.Thread):
     """ Thread to manange openCV activities"""
 
-    def __init__(self, tracking_cores: [(ITrackingCore, str)],
-                 video_stream, enable_imshow=False, camera_resolution=640, server_port=None):
+    def __init__(self, video_stream, camera_resolution=640, enable_imshow=False, server_port=None):
         threading.Thread.__init__(self)
-        self.tracking_cores = tracking_cores
+        self.tracking_cores = {}
+        self.tracking_cores_enabled = {}
+        self.tracking_cores_result = {}
         self.video_stream = video_stream
-        self.enable_imshow = enable_imshow
         self.camera_resolution = camera_resolution
-        self.result_dict = {}
+        self.enable_imshow = enable_imshow
         self.server_enabled = not server_port is None
         self.server_port = server_port
         self.stopped = True
 
+    def add_core(self, name, core: ITrackingCore, enabled=False):
+        self.tracking_cores[name] = core
+        self.tracking_cores_enabled[name] = enabled
+        self.tracking_cores_result[name] = (None, None, None)
+
+    def enable_core(self, name):
+        self.tracking_cores_enabled[name] = True
+
+    def disable_core(self, name):
+        self.tracking_cores_enabled[name] = False
+
     def get_result(self, name):
-        return self.result_dict.get(name, (None, None, None))
+        return self.tracking_cores_result[name]
 
     def stop(self):
         self.stopped = True
@@ -53,9 +63,12 @@ class CVManager(threading.Thread):
                         server_required_name = splited_key[0]
                         server_required_index = int(splited_key[1])
 
-            for core, name in self.tracking_cores:
-                (x, y, size, frames) = core.find(frame.copy())
-                self.result_dict[name] = (x, y, size)
+            for name in self.tracking_cores:
+                if not self.tracking_cores_enabled[name]:
+                    continue
+
+                (x, y, size, frames) = self.tracking_cores[name].find(frame.copy())
+                self.tracking_cores_result[name] = (x, y, size)
 
                 # encode and send frame to client
                 if name == server_required_name\
@@ -72,14 +85,9 @@ class CVManager(threading.Thread):
                     for i, f in enumerate(frames):
                         cv2.imshow(name + ": " + str(i), f)
 
-            key = cv2.waitKey(1) & 0xFF
+            cv2.waitKey(1)
 
-            # if the 'q' key is pressed, stop the loop
-            if key == ord("q"):
-                break
-
-            time.sleep(0.01)
-
+        self.stopped = True
         vs.stop()
         if self.server_enabled:
             server.stop()
