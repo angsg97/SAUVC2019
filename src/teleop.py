@@ -32,6 +32,7 @@ class KeyListener(threading.Thread):
         self.setting = termios.tcgetattr(sys.stdin)
         cv = CVManager(VideoStream(src=0), server_port=3333)
         cv.add_core("Stream", Blank(), True)
+        cv.start()
         try:
             while True:
                 self.key = self.__get_key()
