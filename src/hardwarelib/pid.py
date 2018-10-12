@@ -19,6 +19,7 @@ class PIDController(threading.Thread):
         self.stopped = False
         self.minimal_delay_ms = minimal_delay_ms
         self.simulated = simulated
+        self.enabled = False
 
     def setPID(self, const_p, const_i, const_d):
         self.const_p = const_p
@@ -28,31 +29,48 @@ class PIDController(threading.Thread):
     def stop(self):
         self.stopped = True
 
-    def get_error(self):
+    def resume(self):
+        self.enabled = True
+
+    def pause(self):
+        self.enabled = False
+
+    def __get_error(self):
         return self.input_func() if self.input_attach is None \
             else self.input_func(self.input_attach)
 
-    def output(self, value):
+    def __output(self, value):
         return self.output_func(value) if self.output_attach is None \
             else self.output_func(self.output_attach, value)
 
     def run(self):
+        self.enabled = True
         self.stopped = False
         error_i = 0
         error_d = 0
-        error_last = self.get_error()
-        last_time = time.time()
+        error_last = self.__get_error()
+        last_time = 0
+        just_resumed = True
         while not self.stopped:
-            if not self.simulated:
-                time.sleep(self.minimal_delay_ms/1000)
-                time_interval = time.time() - last_time
-            else:
-                time_interval = self.minimal_delay_ms/1000
-            last_time = time.time()
+            if self.enabled:
+                error_now = self.__get_error()
 
-            error_now = self.get_error()
-            error_i += error_now * time_interval
-            error_d = (error_now - error_last) / time_interval
-            error_last = error_now
+                time_interval = self.minimal_delay_ms/1000 if self.simulated else time.time() - \
+                    last_time
+                last_time = time.time()
 
-            self.output(error_now * self.const_p + error_i * self.const_i + error_d * self.const_d)
+                if just_resumed:
+                    error_i = 0
+                    error_d = 0
+                    just_resumed = False
+
+                else:
+                    error_i += error_now * time_interval
+                    error_d = (error_now - error_last) / time_interval
+                error_last = error_now
+
+                self.__output(error_now * self.const_p + error_i *
+                              self.const_i + error_d * self.const_d)
+
+                if not self.simulated:
+                    time.sleep()
