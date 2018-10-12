@@ -34,6 +34,9 @@ class ColorDetector(ITrackingCore):
                     0.5, (0, 0, 255), 1, cv2.LINE_AA)
         return (None, None, None, [frame]) # no obeject to track, so always return None
 
+class Blank(ITrackingCore):
+    def find(self, frame):
+        return (None, None, None, [frame])
 
 class BallTracker(ITrackingCore):
     """ track object in certain color range """

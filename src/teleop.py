@@ -4,6 +4,9 @@ import termios
 import tty
 import threading
 import time
+from imutils.video import VideoStream
+from tracking import CVManager
+from tracking import Blank
 from cvcar import MCU
 
 
@@ -27,6 +30,8 @@ class KeyListener(threading.Thread):
     def run(self):
         self.stopped = False
         self.setting = termios.tcgetattr(sys.stdin)
+        cv = CVManager(VideoStream(src=0), server_port=3333)
+        cv.add_core("Stream", Blank(), True)
         try:
             while True:
                 self.key = self.__get_key()
@@ -37,6 +42,7 @@ class KeyListener(threading.Thread):
         except Exception:
             pass
         finally:
+            cv.stop()
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.setting)
 
 
