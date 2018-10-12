@@ -20,6 +20,7 @@ class CVManager(threading.Thread):
         self.server_enabled = not server_port is None
         self.server_port = server_port
         self.stopped = True
+        self.new_frame_event = threading.Event()
 
     def add_core(self, name, core: ITrackingCore, enabled=False):
         self.tracking_cores[name] = core
@@ -34,6 +35,9 @@ class CVManager(threading.Thread):
 
     def get_result(self, name):
         return self.tracking_cores_result[name]
+
+    def wait(self):
+        self.new_frame_event.wait()
 
     def stop(self):
         self.stopped = True
@@ -56,8 +60,9 @@ class CVManager(threading.Thread):
             if frame is None:
                 print("Something went wrong when trying to start video stream :(")
                 break
-
-            frame = imutils.resize(frame, width=self.camera_resolution)
+            
+            if not self.camera_resolution is None:
+                frame = imutils.resize(frame, width=self.camera_resolution)
 
             # get the names of items required by server
             server_requests = server.get_requests() if self.server_enabled else []
@@ -78,6 +83,8 @@ class CVManager(threading.Thread):
                     if self.enable_imshow:
                         cv2.imshow(frame_name, f)
 
+            self.new_frame_event.set()
+            self.new_frame_event = threading.Event()
             cv2.waitKey(1)
 
         self.stopped = True
