@@ -27,7 +27,7 @@ def main():
         # print(str(x_error[0]) + "\t" + str(power))
         x_output[0] = power
         mcu.set_motors(y_output[0], power)
-    pid_x = PIDController(get_x_position, turn, 0.001, 0.0006, 0.0001, 1000, True, minimal_delay_ms=30)
+    pid_x = PIDController(get_x_position, turn, 0.002, 0.0008, 0.0001, 1000, True, minimal_delay_ms=30)
 
     y_predict = ParabolaPredictor()
     y_predict.put_data(0, 0)
@@ -56,9 +56,9 @@ def main():
             x_error[0] = position[0]
             if x_error[0] is None:
                 if x_error_last < 0:
-                    mcu.set_motors(0, -0.2)
+                    mcu.set_motors(0, -0.6)
                 elif x_error_last > 0:
-                    mcu.set_motors(0, 0.2)
+                    mcu.set_motors(0, 0.6)
                 else:
                     mcu.set_motors(0, 0)
                 pid_x.pause()
