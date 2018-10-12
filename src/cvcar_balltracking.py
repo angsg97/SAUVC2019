@@ -7,19 +7,29 @@ from hardwarelib import PIDController
 
 
 def main():
-    mcu = MCU("com3")
+    mcu = MCU("/dev/ttyUSB0", 90, 40)
     cv = CVManager(VideoStream(src=0), server_port=3333)
     cv.add_core("Tracker", BallTracker((29, 86, 6), (64, 255, 255)), True)
+
+    position = 0
+    def get_position():
+        return position
+    def turn(power):
+        mcu.set_motors(0, power)
+
+    pid = PIDController(get_position, turn, 0.5, 0.1, 0)
+    
     cv.start()
+    pid.start()
     try:
         while True:
             position = cv.get_result("Tracker")
             x_error = position[0]
             print(x_error)
-            if not x_error is None:
-                mcu.set_motors(0, position[0] * 0.5)
+            if x_error is None:
+                pid.pause()
             else:
-                mcu.set_motors(0, 0)
+                pid.resume()
             time.sleep(0.1)
     except KeyboardInterrupt:
         pass
