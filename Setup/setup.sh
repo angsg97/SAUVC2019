@@ -39,8 +39,9 @@ source activate SAUVC
 # Install dependencies
 echo -e "\nInstalling dependencies..."
 pip install imutils
-conda install numpy scipy matplotlib cython
+conda install scipy cython
 conda install -c conda-forge opencv
+pip install pyserial
 
 # run test code
 echo

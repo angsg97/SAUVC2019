@@ -1,45 +1,44 @@
-import RPi.GPIO as GPIO
+import serial
 
 
 class MCU():
-    def __init__(self, pinnum, init_rate=100):
-        self.rate = init_rate
-        self.velocity = 10
-        GPIO.setmode(GPIO.BOARD)
+    def __init__(self, port, upper_limit=255, lower_limit=40, deadzone=0.02):
+        self.left_power = 0
+        self.right_power = 0
+        self.ser = serial.Serial(port, 115200)
+        self.upper_limit = upper_limit
+        self.lower_limit = lower_limit
+        self.deadzone = deadzone
+        if not self.ser.isOpen():
+            self.ser.open()
 
-        pwm = {}
-        for i, pin in enumerate(pinnum):
-            GPIO.setup(pin, GPIO.OUT)
-            pwm[i] = GPIO.PWM(pin, init_rate)
-            pwm[i].start(0)
-        self.pwml1, self.pwml2, self.pwmr1, self.pwmr2 = pwm[0], pwm[1], pwm[2], pwm[3]
+    def stop(self):
+        self.set_motors(0, 0)
+        self.ser.close()
 
-    def turn_left(self):
-        self.pwml1.ChangeDutyCycle(self.velocity)
-        self.pwml2.ChangeDutyCycle(0)
-        self.pwmr1.ChangeDutyCycle(0)
-        self.pwmr2.ChangeDutyCycle(0)
+    def refresh(self):
+        self.ser.write((str(self.left_power) + " " +
+                        str(self.right_power)).encode())
 
-    def turn_right(self):
-        self.pwmr1.ChangeDutyCycle(self.velocity)
-        self.pwmr2.ChangeDutyCycle(0)
-        self.pwml1.ChangeDutyCycle(0)
-        self.pwml2.ChangeDutyCycle(0)
+    def __check_range(self, power):
+        power_abs = abs(power)
+        power_abs = 1 if power_abs > 1 else power_abs
+        power_sign = 1 if power > 0 else -1
 
-    def forward(self):
-        self.pwmr1.ChangeDutyCycle(self.velocity)
-        self.pwml1.ChangeDutyCycle(self.velocity)
-        self.pwmr2.ChangeDutyCycle(0)
-        self.pwml2.ChangeDutyCycle(0)
+        if power_abs < self.deadzone:
+            return 0
+        else:
+            return power_sign * int(power_abs * (self.upper_limit - self.lower_limit) + self.lower_limit)
 
-    def backward(self):
-        self.pwmr2.ChangeDutyCycle(self.velocity)
-        self.pwml2.ChangeDutyCycle(self.velocity)
-        self.pwmr1.ChangeDutyCycle(0)
-        self.pwml1.ChangeDutyCycle(0)
+    def set_left_motor(self, power):
+        self.left_power = self.__check_range(power)
+        self.refresh()
 
-    def accelerate(self):
-        self.velocity += 10
+    def set_right_motor(self, power):
+        self.right_power = self.__check_range(power)
+        self.refresh()
 
-    def deaccelerate(self):
-        self.velocity -= 10
+    def set_motors(self, power_forward, power_turn_L):
+        self.left_power = self.__check_range(power_forward + power_turn_L)
+        self.right_power = self.__check_range(power_forward - power_turn_L)
+        self.refresh()
