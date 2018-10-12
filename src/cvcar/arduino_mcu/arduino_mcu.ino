@@ -9,11 +9,11 @@
 void setMotor(int powerA, int powerB) {
   if (MOTOR_AI)
     powerA = -powerA;
-  digitalWrite(MOTOR_AD, !(powerA > 0));
+  digitalWrite(MOTOR_AD, powerA < 0);
   analogWrite(MOTOR_AA, powerA > 0 ? powerA : powerA + 255);
   if (MOTOR_BI)
     powerB = -powerB;
-  digitalWrite(MOTOR_BD, !(powerB > 0));
+  digitalWrite(MOTOR_BD, powerB < 0);
   analogWrite(MOTOR_BA, powerB > 0 ? powerB : powerB + 255);
 }
 
