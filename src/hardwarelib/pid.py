@@ -6,7 +6,7 @@ class PIDController(threading.Thread):
 
     def __init__(self,
                  input_func, output_func,
-                 const_p, const_i, const_d,
+                 const_p, const_i, const_d, const_max_i = None,
                  input_attach=None, output_attach=None,
                  minimal_delay_ms=100,
                  simulated=False):
@@ -22,10 +22,11 @@ class PIDController(threading.Thread):
         self.enabled = False
         self.just_resumed = True
 
-    def setPID(self, const_p, const_i, const_d):
+    def setPID(self, const_p, const_i, const_d, const_max_i = None):
         self.const_p = const_p
         self.const_i = const_i
         self.const_d = const_d
+        self.const_max_i = const_max_i
 
     def stop(self):
         self.stopped = True
@@ -68,6 +69,8 @@ class PIDController(threading.Thread):
 
                 else:
                     error_i += error_now * time_interval
+                    if not self.const_max_i is None:
+                        error_i = min(max(error_i, 0 - self.const_max_i), self.const_max_i)
                     error_d = (error_now - error_last) / time_interval
                 error_last = error_now
 
