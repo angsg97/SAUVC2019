@@ -20,6 +20,7 @@ class PIDController(threading.Thread):
         self.minimal_delay_ms = minimal_delay_ms
         self.simulated = simulated
         self.enabled = False
+        self.just_resumed = True
 
     def setPID(self, const_p, const_i, const_d):
         self.const_p = const_p
@@ -30,7 +31,9 @@ class PIDController(threading.Thread):
         self.stopped = True
 
     def resume(self):
-        self.enabled = True
+        if not self.enabled:
+            self.enabled = True
+            self.just_resumed = True
 
     def pause(self):
         self.enabled = False
@@ -50,7 +53,6 @@ class PIDController(threading.Thread):
         error_d = 0
         error_last = self.__get_error()
         last_time = 0
-        just_resumed = True
         while not self.stopped:
             if self.enabled:
                 error_now = self.__get_error()
@@ -59,10 +61,10 @@ class PIDController(threading.Thread):
                     last_time
                 last_time = time.time()
 
-                if just_resumed:
+                if self.just_resumed:
                     error_i = 0
                     error_d = 0
-                    just_resumed = False
+                    self.just_resumed = False
 
                 else:
                     error_i += error_now * time_interval
@@ -73,4 +75,4 @@ class PIDController(threading.Thread):
                               self.const_i + error_d * self.const_d)
 
                 if not self.simulated:
-                    time.sleep()
+                    time.sleep(self.minimal_delay_ms/1000)
