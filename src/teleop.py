@@ -41,7 +41,7 @@ class KeyListener(threading.Thread):
 
 
 def main():
-    mcu = MCU("/dev/ttyUSB0", 90, 40)
+    mcu = MCU("/dev/ttyUSB0", 100, 40)
     key_listener = KeyListener()
     key_listener.start()
     while not key_listener.stopped:
@@ -57,7 +57,7 @@ def main():
             mcu.set_motors(1, 1)
 
         elif key == 's':
-            mcu.set_motors(0, 0)
+            mcu.set_motors(-1, 0)
         elif key == 'a':
             mcu.set_motors(0, -1)
         elif key == 'd':

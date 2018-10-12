@@ -7,6 +7,7 @@ class PIDController(threading.Thread):
     def __init__(self,
                  input_func, output_func,
                  const_p, const_i, const_d, const_max_i = None,
+                 reset_i_when_crossing = False,
                  input_attach=None, output_attach=None,
                  minimal_delay_ms=100,
                  simulated=False):
@@ -16,6 +17,8 @@ class PIDController(threading.Thread):
         self.input_attach = input_attach
         self.output_attach = output_attach
         self.setPID(const_p, const_i, const_d)
+        self.const_max_i = const_max_i
+        self.reset_i_when_crossing = reset_i_when_crossing
         self.stopped = False
         self.minimal_delay_ms = minimal_delay_ms
         self.simulated = simulated
@@ -61,6 +64,10 @@ class PIDController(threading.Thread):
                 time_interval = self.minimal_delay_ms/1000 if self.simulated else time.time() - \
                     last_time
                 last_time = time.time()
+                
+                # in case pid is disabled from get_error function
+                if not self.enabled:
+                    continue
 
                 if self.just_resumed:
                     error_i = 0
@@ -69,6 +76,8 @@ class PIDController(threading.Thread):
 
                 else:
                     error_i += error_now * time_interval
+                    if self.reset_i_when_crossing and error_now * error_last < 0:
+                        error_i = 0
                     if not self.const_max_i is None:
                         error_i = min(max(error_i, 0 - self.const_max_i), self.const_max_i)
                     error_d = (error_now - error_last) / time_interval
@@ -79,3 +88,5 @@ class PIDController(threading.Thread):
 
                 if not self.simulated:
                     time.sleep(self.minimal_delay_ms/1000)
+            else:
+                time.sleep(self.minimal_delay_ms/1000)
