@@ -18,6 +18,7 @@ class Server(threading.Thread):
     def run(self):
         self.stopped = False
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # allow the port be reused after closing
         server_socket.bind(('0.0.0.0', self.port))
         server_socket.settimeout(3)
         try:
@@ -31,6 +32,7 @@ class Server(threading.Thread):
                     pass
         finally:
             self.data_prepared_event.set()
+            server_socket.shutdown(socket.SHUT_RDWR)
             server_socket.close()
 
     def get_requests(self):
