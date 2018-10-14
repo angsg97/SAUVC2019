@@ -14,7 +14,6 @@ class ParabolaPredictor():
             else:
                 pass
         self.past_value.append(piont)
-        print(self.past_value)
 
     def predict(self, time):
         if len(self.past_value) == 1:
