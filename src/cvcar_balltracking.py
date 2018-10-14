@@ -10,7 +10,7 @@ from hardwarelib import ParabolaPredictor
 def main():
     mcu = MCU("/dev/ttyUSB0", 120, 40, 0.03)
     cv = CVManager(VideoStream(src=0), server_port=3333)
-    cv.add_core("Tracker", BallTracker((29, 86, 6), (64, 255, 255)), True)
+    cv.add_core("Tracker", BallTracker((30, 50, 60), (50, 200, 255)), True)
     start_time = time.time() 
 
     x_predict = ParabolaPredictor()
@@ -20,14 +20,14 @@ def main():
     x_error = [0]
     x_output = [0]
     def get_x_position():
-        val = x_predict.predict(time.time()- start_time)
+        val = x_predict.predict(time.time()- start_time)#*0.5 + x_error[0]*0.5
         # print(str(time.time()-start_time) + "\t" + str(val) + "\t", end='')
         return val
     def turn(power):
         # print(str(x_error[0]) + "\t" + str(power))
         x_output[0] = power
         mcu.set_motors(y_output[0], power)
-    pid_x = PIDController(get_x_position, turn, 0.002, 0.0008, 0.0001, 1000, True, minimal_delay_ms=30)
+    pid_x = PIDController(get_x_position, turn, 0.001, 0.002, 0.000, 1000, True, minimal_delay_ms=25)
 
     y_predict = ParabolaPredictor()
     y_predict.put_data(0, 0)
@@ -44,7 +44,7 @@ def main():
         x_output[0] = power
         y_output[0] = power
         mcu.set_motors(power, 0)
-    pid_y = PIDController(get_y_position, forward, 0.005, 0.00, 0, 0, True, minimal_delay_ms=30)
+    pid_y = PIDController(get_y_position, forward, 0.003, 0.002, 0, 500, True, minimal_delay_ms=30)
     
     cv.start()
     pid_x.start()
