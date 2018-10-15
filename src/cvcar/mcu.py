@@ -34,7 +34,7 @@ class MCU():
     def __linear_mapping(self, power, check_range=True):
         if self.stopped:
             return 0
-        power_abs = self.__check_range(abs(power))
+        power_abs = self.__check_range(abs(power)) if check_range else abs(power)
         power_sign = 1 if power > 0 else -1
 
         if power_abs < self.deadzone:
