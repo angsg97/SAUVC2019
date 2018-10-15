@@ -10,7 +10,7 @@ from hardwarelib import ParabolaPredictor
 def main():
     mcu = MCU("/dev/ttyUSB0", 120, 40, 0.03)
     cv = CVManager(VideoStream(src=0), server_port=3333)
-    cv.add_core("Tracker", BallTracker((30, 50, 60), (50, 200, 255)), True)
+    cv.add_core("Tracker", BallTracker((30, 40, 60), (50, 200, 255)), True)
     start_time = time.time() 
 
     x_predict = ParabolaPredictor()
