@@ -42,6 +42,7 @@ pip install imutils
 conda install scipy cython
 conda install -c conda-forge opencv
 pip install pyserial
+pip install matplotlib # never use conda to do that :(
 
 # run test code
 echo
