@@ -25,7 +25,7 @@ After you accept the invite linnk and become a collaborator, you should be able 
 
     git clone git@github.com:heyuhang0/SAUVC2019.git
 
-To get lastest update, simplely run
+To get lastest update, simplely run:
 
     git pull
 
