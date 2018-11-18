@@ -4,42 +4,77 @@ import time
 
 class IMU(threading.Thread):
     def __init__(self, port):
+        """ Create a new IMU reader 
+        Args:
+            port: port to JY-61 IMU, usually looks loke /dev/ttyUSBx on Linux
+        """
         threading.Thread.__init__(self)
         self.ser = serial.Serial(port, 115200)
-        if not self.ser.isOpen():
+        if not self.ser.isOpen(): # the serial may already started
             self.ser.open()
         self.angles = (0, 0, 0)
         self.a = (0, 0, 0)
         self.w = (0, 0, 0)
         self.temperature = 36.53
+        # the map of process methods corresponding to package types
         self.__package_interpreters = {0x51: self.__save_a, 0x52: self.__save_w, 0x53: self.__save_angles}
-        self.__package = []
+        self.stopped = True
     
     def get_angles(self):
+        """ Get angles
+        Returns:
+            (poll(x), pitch(y), yaw(z)) in degree
+        """
         return self.angles
 
     def get_acceleration(self):
+        """ Get acceleration
+        
+        Returns:
+            (a_x, a_y, a_z) in m^2/s
+        """
         return self.a
     
     def get_angular_velocity(self):
+        """ Get angular velocity
+        Returns:
+            (w_x, w_y, w_z) in degree/s
+        """
         return self.w
 
     def get_temperature(self):
+        """ Get temperature measured by module
+        Returns:
+            a float number which is the temperature in ℃
+        """
         return self.temperature
 
     def is_open(self):
+        """ check if the serial port is opened 
+        Note that it is opened when creating the instance
+        """
         return self.ser.isOpen()
 
+    def is_running(self):
+        """ check if the thread is running """
+        return not self.stopped
+
     def run(self):
+        """ The main body for the reader thread
+        You should not call this method directly
+        Use start to start a new thread so it can run parallel
+        """
         self.stopped = False
+        package = []
         while self.is_open() and not self.stopped:
             data = self.ser.read()[0]
-            if data == 0x55:
-                self.__mpu6050_decode(self.__package)
-                self.__package = []
-            self.__package.append(data)
+            # TODO may loose frame when there is 0x55 in package body
+            if data == 0x55: # 0x55 indicates the head of a new package
+                self.__mpu6050_decode(package) # so decode the old one
+                package = [] # and empty the buffer
+            package.append(data)
 
-        if not self.stopped:
+        if not self.stopped: # if it was not stopped by user
             self.stop()
     
     def stop(self):
@@ -63,15 +98,19 @@ class IMU(threading.Thread):
         self.w = self.__save_general(raw_items, 180)
     
     def __bin_to_signed(self, num, size):
+        """ convert from unsigned bin to signed integer with corresponding size """
         return (num & ((1 << (size - 1)) - 1)) - (num & (1 << (size - 1)))
 
     def __check_package(self, package):
-        if len(package) != 11:
+        """ Check if the package is correct """
+        if len(package) != 11: # check length
             return False
-        if package[0] != 0x55:
+        if package[0] != 0x55: # check the head of the package
             return False
+        # check the package type
         if not package[1] in self.__package_interpreters.keys():
             return False
+        # check sum
         sum = 0
         for i in range(10):
             sum += package[i]
@@ -85,7 +124,9 @@ class IMU(threading.Thread):
             return
         items = []
         for i in range(4):
+            # combine the higher bits with the lower bits
             data = package[2 + 2*i + 1] << 8 | package[2 + 2*i]
+            # then converted it to a signed bumber
             items.append(self.__bin_to_signed(data, 16))
         self.__package_interpreters[package[1]](items)
 
