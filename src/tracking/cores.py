@@ -1,3 +1,4 @@
+""" this module contains definition of ITrackingCore interface and sample implement"""
 from abc import ABCMeta, abstractclassmethod
 import cv2
 
@@ -5,21 +6,22 @@ import cv2
 class ITrackingCore(metaclass=ABCMeta):
     """ The interface for all tracking cores so that CVManager can manage them"""
     @abstractclassmethod
-    def find(self, frame):
-        """Find an object in the frame
+    def find(cls, frame):
+        """ Find an object in the frame
 
         Args:
             frame: an openCV frame in BGR
 
-        Return:
+        Returns:
             (x, y, size, frames)
                 the location of the object relative to center(in pixel) and frames for debug
         """
-        pass
 
 
 class ColorDetector(ITrackingCore):
-    """ show the color in the middle of the frame"""
+    """ this core shows the color in the centre of the frame
+    It only returns debug frame
+    """
 
     def find(self, frame):
         height, width, _ = frame.shape
@@ -28,13 +30,15 @@ class ColorDetector(ITrackingCore):
         frame = cv2.GaussianBlur(frame, (15, 15), 0)
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-        cv2.circle(frame, (mid_x, mid_y), 15, (0, 0, 255), 1)
+        cv2.circle(frame, (mid_x, mid_y), 15, (0, 0, 255), 1) # draw a circle in the middle
+        # show texts of both BGR and HSV value besides the circle
         cv2.putText(frame, "BGR: " + str(frame[mid_y][mid_x]) + " HSV: " + str(hsv[mid_y][mid_x]),
                     (mid_x - 100, mid_y - 20), cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (0, 0, 255), 1, cv2.LINE_AA)
         return (None, None, None, [frame]) # no obeject to track, so always return None
 
 class Blank(ITrackingCore):
+    """ this core does nothing """
     def find(self, frame):
         return (None, None, None, [frame])
 

@@ -20,7 +20,7 @@ def main():
     x_error = [0]
     x_output = [0]
     def get_x_position():
-        val = x_predict.predict(time.time()- start_time)#*0.5 + x_error[0]*0.5
+        val = x_predict.predict(time.time()- start_time)\
         # print(str(time.time()-start_time) + "\t" + str(val) + "\t", end='')
         return val
     def turn(power):
@@ -37,7 +37,6 @@ def main():
     def get_y_position():
         val = y_predict.predict(time.time() - start_time)
         print(str(time.time()-start_time) + "\t" + str(val) + "\t", end='')
-        return val
         return val
     def forward(power):
         print(str(y_error[0] - 130) + "\t" + str(power))
