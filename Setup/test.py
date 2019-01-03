@@ -53,9 +53,9 @@ if len(cnts) > 0:
                    (0, 255, 255), 2)
         cv2.circle(frame, center, 5, (0, 0, 255), -1)
 
-# show the frame to our screen
-cv2.imshow("Frame", frame)
-cv2.waitKey(0)
+        if int(x) == 232 and int(y) == 139:
+            print("test passed")
+        else:
+            print("test failed")
 
-# close all windows
-cv2.destroyAllWindows()
+cv2.waitKey(0)
