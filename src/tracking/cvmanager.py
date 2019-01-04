@@ -74,7 +74,7 @@ class CVManager(threading.Thread):
         return self.tracking_cores_result[name]
 
     def wait(self):
-        """ Wait for next frame is proceeded """
+        """ Wait for the next frame to be proceeded """
         self.new_frame_event.wait()
 
     def stop(self):
