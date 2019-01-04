@@ -4,7 +4,7 @@ import time
 
 
 class PIDController(threading.Thread):
-    """ an implements of standard pid controller """
+    """ a standard pid controller """
     def __init__(self,
                  input_func, output_func,
                  const_p, const_i, const_d, const_max_i=None,
@@ -87,6 +87,8 @@ class PIDController(threading.Thread):
         while not self.stopped:
             if self.enabled:
                 error_now = self.__get_error()
+                if error_now is None:
+                    continue
 
                 time_interval = self.minimal_delay_ms/1000 if self.simulated else time.time() - \
                     last_time

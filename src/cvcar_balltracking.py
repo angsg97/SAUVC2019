@@ -8,52 +8,47 @@ from hardwarelib import ParabolaPredictor
 
 
 def main():
+    # inits MCU
     mcu = MCU("/dev/ttyUSB0", 120, 40, 0.03)
-    cv = CVManager(VideoStream(src=0), server_port=3333)
+    # inits CV Manager
+    cv = CVManager(VideoStream(src=0, resolution=(320, 240)), server_port=3333)
     cv.add_core("Tracker", BallTracker((30, 40, 60), (50, 200, 255)), True)
-    start_time = time.time() 
 
-    x_predict = ParabolaPredictor()
-    x_predict.put_data(0, 0)
-
-    x_error_last = 0
-    x_error = [0]
-    x_output = [0]
+    # inits PID controller in X axis (turn left / right)
+    x_output = [0] # set it as list so that inner function can access it
+    # callback function for PID controller which returns current error in x axis
     def get_x_position():
-        val = x_predict.predict(time.time()- start_time)\
-        # print(str(time.time()-start_time) + "\t" + str(val) + "\t", end='')
-        return val
+        cv.wait()
+        return cv.get_result("Tracker")[0]
+    # callback function to set motors
     def turn(power):
-        # print(str(x_error[0]) + "\t" + str(power))
         x_output[0] = power
-        mcu.set_motors(y_output[0], power)
-    pid_x = PIDController(get_x_position, turn, 0.001, 0.002, 0.000, 1000, True, minimal_delay_ms=25)
+        mcu.set_motors(y_output[0], x_output[0])
+    # inits PID controller
+    pid_x = PIDController(get_x_position, turn, 0.001, 0.002, 0, 1000, True, minimal_delay_ms=50)
 
-    y_predict = ParabolaPredictor()
-    y_predict.put_data(0, 0)
-
-    y_error = [0]
+    # inits PID controller in Y axis (foraward / backward)
     y_output = [0]
     def get_y_position():
-        val = y_predict.predict(time.time() - start_time)
-        print(str(time.time()-start_time) + "\t" + str(val) + "\t", end='')
-        return val
+        cv.wait()
+        return 130 - cv.get_result("Tracker")[2]
     def forward(power):
-        print(str(y_error[0] - 130) + "\t" + str(power))
-        x_output[0] = power
         y_output[0] = power
-        mcu.set_motors(power, 0)
-    pid_y = PIDController(get_y_position, forward, 0.003, 0.002, 0, 500, True, minimal_delay_ms=30)
-    
+        mcu.set_motors(y_output[0], x_output[0])
+    pid_y = PIDController(get_y_position, forward, 0.003, 0.002, 0, 500, True, minimal_delay_ms=50)
+
+    # Starts everything
     cv.start()
     pid_x.start()
     pid_y.start()
     try:
+        x_error_last = 0
         while True:
             cv.wait()
             position = cv.get_result("Tracker")
-            x_error[0] = position[0]
-            if x_error[0] is None:
+            # if can not find object
+            # stop PID and turn to last known direction
+            if position[0] is None:
                 if x_error_last < 0:
                     mcu.set_motors(0, -0.6)
                 elif x_error_last > 0:
@@ -62,16 +57,15 @@ def main():
                     mcu.set_motors(0, 0)
                 pid_x.pause()
                 pid_y.pause()
+            # or resume PID and save last x position
             else:
-                if x_error_last != x_error[0]:
-                    x_predict.put_data(time.time()-start_time, x_error[0])
-                    y_error[0] = 130 - position[2]
-                    y_predict.put_data(time.time()-start_time, y_error[0])
-                    x_error_last = x_error[0]
+                x_error_last = position[0]
                 pid_x.resume()
                 pid_y.resume()
+    # catch KeyboardInterrupt (caused by Ctrl-C)
     except KeyboardInterrupt:
         pass
+    # so we can properly stop the program
     finally:
         print("Stopping remaining threads...")
         mcu.stop()
