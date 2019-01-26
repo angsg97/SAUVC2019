@@ -2,6 +2,7 @@
 import threading
 import numpy as np
 import imutils
+from imutils.video import VideoStream
 import cv2
 import network
 from tracking.cores import ITrackingCore
@@ -14,7 +15,7 @@ class CVManager(threading.Thread):
     and provides a universal way to manage these cores, access their result and debug
     """
 
-    def __init__(self, video_stream, camera_resolution=640, enable_imshow=False, server_port=None):
+    def __init__(self, video_stream, camera_resolution=640, enable_imshow=False, server_port=None, delay=1):
         """ Inits the CVManager
         (use start method to launch it)
         Args:
@@ -32,13 +33,20 @@ class CVManager(threading.Thread):
         self.tracking_cores = {}
         self.tracking_cores_enabled = {}
         self.tracking_cores_result = {}
-        self.video_stream = video_stream
+        # load video stream
+        if isinstance(video_stream, int):
+            self.video_stream = VideoStream(src=video_stream)
+        elif isinstance(video_stream, str):
+            self.video_stream = cv2.VideoCapture(video_stream)
+        elif isinstance(video_stream, (imutils.video.videostream.VideoStream, cv2.VideoCapture)):
+            self.video_stream = video_stream
         self.camera_resolution = camera_resolution
         self.enable_imshow = enable_imshow
         self.server_enabled = not server_port is None
         self.server_port = server_port
         self.stopped = True
         self.new_frame_event = threading.Event()
+        self.delay = delay
 
     def add_core(self, name, core: ITrackingCore, enabled=False):
         """ Add a core to the manager
@@ -80,6 +88,8 @@ class CVManager(threading.Thread):
     def stop(self):
         """ Stop the Cv manager """
         self.stopped = True
+        if self.server:
+            self.server.stop()
 
     @staticmethod
     def __encode(frame):
@@ -94,24 +104,32 @@ class CVManager(threading.Thread):
         (It should only be called by threading.Thread, use start() to launch it)
         """
         self.stopped = False
-        vs = self.video_stream.start()
+        vs = self.video_stream.start() \
+            if isinstance(self.video_stream, imutils.video.videostream.VideoStream) \
+            else self.video_stream
         # Inits video streaming server
         if self.server_enabled:
-            server = network.Server(self.server_port)
-            server.start()
+            self.server = network.Server(self.server_port)
+            self.server.start()
         while not self.stopped:
-            frame = vs.read()
+            frame = vs.read() \
+                if isinstance(self.video_stream, imutils.video.videostream.VideoStream) \
+                else vs.read()[1]
 
             if frame is None:
-                print("Something went wrong when trying to start video stream :(")
-                break
+                if isinstance(self.video_stream, imutils.video.videostream.VideoStream):
+                    print("Something went wrong when trying to start video stream :(")
+                    break
+                else:
+                    vs.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    continue
 
             # Resize frame if required
             if not self.camera_resolution is None:
                 frame = imutils.resize(frame, width=self.camera_resolution)
 
             # get a list of the names of items required by server
-            server_requests = server.get_requests() if self.server_enabled else []
+            server_requests = self.server.get_requests() if self.server_enabled else []
 
             # run each core
             for name in self.tracking_cores:
@@ -125,17 +143,16 @@ class CVManager(threading.Thread):
                     frame_name = name + "," + str(i)
                     # encode and send frame to client
                     if frame_name in server_requests:
-                        server.offer_data(frame_name, CVManager.__encode(f))
+                        self.server.offer_data(frame_name, CVManager.__encode(f))
                     # show frames in desktop is enabled
                     if self.enable_imshow:
                         cv2.imshow(frame_name, f)
 
             self.new_frame_event.set() # set the event so wait() method can be released
             self.new_frame_event = threading.Event()
-            cv2.waitKey(1) # wait for 1 ms
+            cv2.waitKey(self.delay) # wait
 
         # stop the manager
-        self.stopped = True
-        vs.stop()
-        if self.server_enabled:
-            server.stop()
+        if isinstance(self.video_stream, imutils.video.videostream.VideoStream):
+            vs.stop()
+        self.stop()

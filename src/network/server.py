@@ -31,11 +31,13 @@ class Server(threading.Thread):
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server_socket.bind(('0.0.0.0', self.port)) # bind the server to the port
         server_socket.settimeout(3)
+        server_used = False
         try:
             server_socket.listen(5) # start listening
             while not self.stopped:
                 try:
                     sock, _ = server_socket.accept() # wait for new connection
+                    server_used = True
                     # start a tcp link thread and pass the connected socket to it
                     # and the new thread will handle the request
                     threading.Thread(target=Server.__tcp_link,
@@ -45,7 +47,8 @@ class Server(threading.Thread):
         # stop the server
         finally:
             self.data_prepared_event.set()
-            server_socket.shutdown(socket.SHUT_RDWR)
+            if server_used:
+                server_socket.shutdown(socket.SHUT_RDWR)
             server_socket.close()
 
     def get_requests(self):
