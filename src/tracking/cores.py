@@ -42,6 +42,16 @@ class Blank(ITrackingCore):
     def find(self, frame):
         return (None, None, None, [frame])
 
+class AllChannels(ITrackingCore):
+    def find(self, frame):
+        # Splite channels
+        b, g, r = cv2.split(frame)
+        yCrCb = cv2.cvtColor(frame, cv2.COLOR_BGR2YCrCb)
+        y, Cr, Cb = cv2.split(yCrCb)
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv)
+        return (None, None, None, [b, g, r, y, Cr, Cb, h, s, v])
+
 class BallTracker(ITrackingCore):
     """ track object in certain color range """
 
