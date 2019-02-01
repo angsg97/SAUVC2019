@@ -17,7 +17,7 @@ class CVManager(threading.Thread):
     and provides a universal way to manage these cores, access their result and debug
     """
 
-    def __init__(self, video_stream, camera_resolution=640, enable_imshow=False, server_port=None, delay=1):
+    def __init__(self, video_stream, camera_resolution=640, enable_imshow=True, server_port=None, delay=1):
         """ Inits the CVManager
         (use start method to launch it)
         Args:
