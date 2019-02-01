@@ -65,6 +65,8 @@ class GateTrackerV2(ITrackingCore):
         vec_R = self.Vector.from_line(line_R)
         vec_U = self.Vector.from_line(line_U)
         vec_D = self.Vector.from_line(line_D)
+        if vec_U.norm() == 0 or vec_D.norm() == 0:
+            return False
 
         # check parallel
         if vec_L.angle(vec_R) > 10:
