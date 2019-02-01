@@ -1,4 +1,6 @@
 """ Contains the CVManager class """
+import os
+import platform
 import threading
 import numpy as np
 import imutils
@@ -15,7 +17,7 @@ class CVManager(threading.Thread):
     and provides a universal way to manage these cores, access their result and debug
     """
 
-    def __init__(self, video_stream, camera_resolution=640, enable_imshow=False, server_port=None, delay=1):
+    def __init__(self, video_stream, camera_resolution=640, enable_imshow=True, server_port=None, delay=1):
         """ Inits the CVManager
         (use start method to launch it)
         Args:
@@ -41,7 +43,7 @@ class CVManager(threading.Thread):
         elif isinstance(video_stream, (imutils.video.videostream.VideoStream, cv2.VideoCapture)):
             self.video_stream = video_stream
         self.camera_resolution = camera_resolution
-        self.enable_imshow = enable_imshow
+        self.enable_imshow = enable_imshow and CVManager.__check_display()
         self.server_enabled = not server_port is None
         self.server_port = server_port
         self.stopped = True
@@ -99,6 +101,15 @@ class CVManager(threading.Thread):
         # convert numpy array to bytes which required by Server class
         return data_encode.tostring(np.uint8)
 
+    @staticmethod
+    def __check_display():
+        """ Check if there is a display available """
+        sysstr = platform.system()
+        if sysstr =="Windows":
+            return True # Assume windows always have displays
+        else:
+            return 'DISPLAY' in os.environ
+
     def run(self):
         """ Main body for cv manager
         (It should only be called by threading.Thread, use start() to launch it)
@@ -121,6 +132,7 @@ class CVManager(threading.Thread):
                     print("Something went wrong when trying to start video stream :(")
                     break
                 else:
+                    # Reset cap to replay it if it is a video
                     vs.set(cv2.CAP_PROP_POS_FRAMES, 0)
                     continue
 
