@@ -5,6 +5,7 @@ please copy this file and feel free to modify the copy to test your own tracking
 import time
 import argparse
 from tracking import CVManager
+from tracking import GateTrackerV3
 from tracking import GateTrackerV2
 
 def main():
@@ -25,7 +26,8 @@ def main():
                    enable_imshow=True,  # enable image show windows
                    server_port=3333,    # start stream server at port 3333
                    delay=5)
-    cv.add_core("GateTracker", GateTrackerV2(), True)
+    cv.add_core("GateTracker", GateTrackerV3(), True)
+    # cv.add_core("GateTrackerV2", GateTrackerV2(), True)
     cv.start()
     try:
         while True:
