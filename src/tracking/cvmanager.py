@@ -8,6 +8,7 @@ from imutils.video import VideoStream
 import cv2
 import network
 from tracking.cores import ITrackingCore
+import time
 
 
 class CVManager(threading.Thread):
@@ -17,7 +18,7 @@ class CVManager(threading.Thread):
     and provides a universal way to manage these cores, access their result and debug
     """
 
-    def __init__(self, video_stream, camera_resolution=640, enable_imshow=True, server_port=None, delay=1):
+    def __init__(self, video_stream, camera_resolution=640, enable_imshow=True, server_port=None, delay=1, outputfolder=None):
         """ Inits the CVManager
         (use start method to launch it)
         Args:
@@ -49,7 +50,19 @@ class CVManager(threading.Thread):
         self.stopped = True
         self.new_frame_event = threading.Event()
         self.delay = delay
+        if outputfolder:
+            if os.path.exists(outputfolder):
+                self.path = os.path.join(outputfolder,time.strftime("%Y-%m-%d-%H_%M_%S",time.localtime(time.time())) + ".avi")
+                # Define the codec and create VideoWriter object
+                fourcc = cv2.VideoWriter_fourcc(*'XVID')
+                self.out = cv2.VideoWriter(self.path,fourcc, 30.0, (640,480))
+            else:
+                print("Path does not exists!")
+        else:
+            self.path = None
 
+        
+        
     def add_core(self, name, core: ITrackingCore, enabled=False):
         """ Add a core to the manager
         Args:
@@ -90,6 +103,8 @@ class CVManager(threading.Thread):
     def stop(self):
         """ Stop the Cv manager """
         self.stopped = True
+        if self.path:
+            self.out.release()
         if self.server:
             self.server.stop()
 
@@ -113,7 +128,7 @@ class CVManager(threading.Thread):
     def run(self):
         """ Main body for cv manager
         (It should only be called by threading.Thread, use start() to launch it)
-        """
+        """ 
         self.stopped = False
         vs = self.video_stream.start() \
             if isinstance(self.video_stream, imutils.video.videostream.VideoStream) \
@@ -126,6 +141,7 @@ class CVManager(threading.Thread):
             frame = vs.read() \
                 if isinstance(self.video_stream, imutils.video.videostream.VideoStream) \
                 else vs.read()[1]
+            
 
             if frame is None:
                 if isinstance(self.video_stream, imutils.video.videostream.VideoStream):
@@ -162,7 +178,9 @@ class CVManager(threading.Thread):
 
             self.new_frame_event.set() # set the event so wait() method can be released
             self.new_frame_event = threading.Event()
-            cv2.waitKey(self.delay) # wait
+            if self.path:
+                self.out.write(frame)
+            cv2.waitKey(self.delay) # wait 
 
         # stop the manager
         if isinstance(self.video_stream, imutils.video.videostream.VideoStream):

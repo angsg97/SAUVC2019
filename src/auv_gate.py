@@ -14,6 +14,8 @@ def main():
                     help="path to the (optional) video file")
     ap.add_argument("-c", "--camera",
                     help="index of camera")
+    ap.add_argument("-o","--output",
+                    help="path to save the video")
     args = vars(ap.parse_args())
     if args.get("video", False):
         vs = args.get("video", False)
@@ -25,7 +27,7 @@ def main():
     cv = CVManager(vs,                  # choose the first web camera as the source
                    enable_imshow=True,  # enable image show windows
                    server_port=3333,    # start stream server at port 3333
-                   delay=5)
+                   delay=5,outputfolder=args.get("output"))
     cv.add_core("GateTracker", GateTrackerV3(), True)
     # cv.add_core("GateTrackerV2", GateTrackerV2(), True)
     cv.start()
