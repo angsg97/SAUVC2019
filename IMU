@@ -1,0 +1,22 @@
+Initializing IMU code
+purpose: 
+ - obtain  YawPitchRoll 
+           magnetic x y z
+           acceleration  x y z
+           angular rate x y z
+           
+
+How to run the code:
+1. download the vectornav library from
+
+ https://www.vectornav.com/docs/default-source/downloads/programming-library/vnproglib-1-1-4.zip?sfvrsn=fe678835_20
+
+2. place SAUVC folder into <root>/cpp/projects
+
+3. open a terminal and change the directory to <root>/cpp/projects/SAUVC
+
+4. To build the code,run the command make
+
+5. to run the example, execute command ./SAUVC to run as a c++ function
+
+6. to run the python code, execute command python python_side.py
