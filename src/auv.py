@@ -3,6 +3,7 @@ import argparse
 from tracking import CVManager
 from tracking import GateTrackerV3
 from mcu import MCU
+from imu import IMU
 
 def main():
     # read arguments
@@ -31,22 +32,31 @@ def main():
 
     # inits MCU
     mcu = MCU("/dev/ttyUSB0")
+    imu = IMU()
 
     # start subprocess
     cv.start()
     mcu.start()
+    imu.start()
     try:
         motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
         while True:
             gate = cv.get_result("GateTracker")[0]
             depth = mcu.get_depth()
             pinger = mcu.get_angle()
+            pitch = imu.get_pitch()
+            roll = imu.get_roll()
+            yaw = imu.get_yaw()
 
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
 
             print('Gate:', gate)
             print('Depth:', depth)
-            print('Pinger', pinger)
+            print('Pinger:', pinger)
+            print('Pitch:', pitch)
+            print('Roll:', roll)
+            print('Yaw:', yaw)
+            print('Motors:', (motor_fl, motor_fr, motor_bl, motor_br, motor_t))
             print()
             time.sleep(0.05)
     except KeyboardInterrupt:
