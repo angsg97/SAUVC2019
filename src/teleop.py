@@ -10,8 +10,22 @@ import time
 from imutils.video import VideoStream
 from tracking import CVManager
 from tracking import Blank
-from cvcar import MCU
+from mcu import MCU
 
+OVERALL_SPEED = 0.4
+KEY_MAP = {
+    't': (1, 0, 0, 0, 0),
+    'g': (-1, 0, 0, 0, 0),
+    'y': (0, 1, 0, 0, 0),
+    'h': (0, -1, 0, 0, 0),
+    'u': (0, 0, 1, 0, 0),
+    'j': (0, 0, -1, 0, 0),
+    'i': (0, 0, 0, 1, 0),
+    'k': (0, 0, 0, -1, 0),
+    'o': (0, 0, 0, 0, 1),
+    'l': (0, 0, 0, 0, -1),
+    ' ': (0, 0, 0, 0, 0)
+}
 
 class KeyListener(threading.Thread):
     """ Listens all keyboard events """
@@ -52,7 +66,7 @@ class KeyListener(threading.Thread):
 
 def main():
     """ main body """
-    mcu = MCU("/dev/ttyUSB0", 100, 40)
+    mcu = MCU("/dev/ttyUSB0")
     key_listener = KeyListener()
     key_listener.start()
     # prepare video streaming
@@ -65,29 +79,13 @@ def main():
         # if the key is released more than 0.05s
         # stop the car
         if time.time() - t > 0.05:
-            mcu.set_motors(0, 0)
+            mcu.set_motors(0, 0, 0, 0, 0)
 
         # map keyboared to mcu actions
-        elif key == 'w':
-            mcu.set_motors(1, 0)
-        elif key == 'q':
-            mcu.set_motors(1, -1)
-        elif key == 'e':
-            mcu.set_motors(1, 1)
+        action = KEY_MAP.setdefault(key, (0, 0, 0, 0, 0))
+        action = [i * OVERALL_SPEED for i in action] # reduce speed
+        mcu.set_motors(action[0], action[1], action[2], action[3], action[4])
 
-        elif key == 's':
-            mcu.set_motors(-1, 0)
-        elif key == 'a':
-            mcu.set_motors(0, -1)
-        elif key == 'd':
-            mcu.set_motors(0, 1)
-
-        elif key == 'x':
-            mcu.set_motors(-1, 0)
-        elif key == 'z':
-            mcu.set_motors(-1, -1)
-        elif key == 'c':
-            mcu.set_motors(-1, 1)
         time.sleep(0.04)
     cv.stop()
 
