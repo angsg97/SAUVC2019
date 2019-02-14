@@ -1,1 +1,1 @@
-from mcu import *
+from mcu.mcu_class import MCU
