@@ -32,6 +32,8 @@ def main():
 
     # inits MCU
     mcu = MCU("/dev/ttyUSB0")
+
+    # inits IMU
     imu = IMU()
 
     # start subprocess
@@ -47,6 +49,8 @@ def main():
             pitch = imu.get_pitch()
             roll = imu.get_roll()
             yaw = imu.get_yaw()
+
+            # Put control codes here
 
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
 
@@ -64,6 +68,7 @@ def main():
     finally:
         print("Stopping remaining threads...")
         cv.stop()
+        imu.stop()
         mcu.stop()
 
 if __name__ == '__main__':
