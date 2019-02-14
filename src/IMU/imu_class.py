@@ -1,9 +1,3 @@
-import sys
-import subprocess
-import threading
-import time
-
-
 """
 
 PSEUDOCODE:
@@ -24,6 +18,11 @@ this store list of device before pluggin in the port
 
 
 """
+import sys
+import os
+import subprocess
+import threading
+import time
 
 
 class IMU(threading.Thread):
@@ -50,21 +49,22 @@ class IMU(threading.Thread):
 
         self.finalParse = []
         self.stopped = False
-    
+
     def stop(self):
         self.stopped = True
 
     def run(self):
-        self.proc = subprocess.Popen('./SAUVC', bufsize=1024, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        self.proc = subprocess.Popen(os.path.join(
+            sys.path[0], './imu-core'), bufsize=1024, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         # once the IMU class has been instantiated,
         # allow './SAUVC' program to run and read the values from the terminal
         while not self.stopped:
             self.output_parser("Acceleration:")
             self.accx, self.accy, self.accz = self.get_converted_parse()
             self.output_parser("Angular Rate:")
-            self.angx, self.angy,self.angz = self.get_converted_parse()
+            self.angx, self.angy, self.angz = self.get_converted_parse()
             self.output_parser("YawPitchRoll:")
-            self.yaw, self.pitch, self.roll  = self.get_converted_parse()
+            self.yaw, self.pitch, self.roll = self.get_converted_parse()
             self.output_parser("Magnetic:")
             self.magx, self.magy, self.magz = self.get_converted_parse()
         self.proc.kill()
@@ -76,8 +76,8 @@ class IMU(threading.Thread):
         for i in range(5):
             storebytes = self.proc.stdout.readline()
             output = storebytes.decode()
-            #Everytime data is needed, we need the latest reading from the IMU
-            #we then decode this values as they are in bytes as it is read from the terminal
+            # Everytime data is needed, we need the latest reading from the IMU
+            # we then decode this values as they are in bytes as it is read from the terminal
             # print(self.output)
             if datatype in output:
                 output_1 = output.replace(datatype, "", 1)
@@ -85,13 +85,8 @@ class IMU(threading.Thread):
                 output_3 = output_2.replace(")", ";", 1)
                 self.finalParse = output_3.split(";")
                 return
-                """"     print(self.finalParse)
-                print(type(self.finalParse))
-                print(len(self.finalParse))     """
 
-            else:
-                self.finalParse = (-1, -1, -1)
-                #removing this causes an error
+        self.finalParse = (-1, -1, -1)
 
     def get_yaw(self):
         return self.yaw
@@ -130,32 +125,31 @@ class IMU(threading.Thread):
         return self.magz
 
 
-#Test code
+# Test code
 if __name__ == '__main__':
     def test():
         try:
             imu = IMU()
             imu.start()
             while True:
-                print("yaw = " , imu.get_yaw())
-                print("pitch = " , imu.get_pitch())
-                print("roll = " , imu.get_roll())
+                print("yaw = ", imu.get_yaw())
+                print("pitch = ", imu.get_pitch())
+                print("roll = ", imu.get_roll())
 
-                print("angx = " , imu.get_angx())
-                print("angy = " , imu.get_angy())
-                print("angz = " , imu.get_angz())
+                print("angx = ", imu.get_angx())
+                print("angy = ", imu.get_angy())
+                print("angz = ", imu.get_angz())
 
-                print("accx = " , imu.get_accx())
-                print("accy = " , imu.get_accy())
-                print("accz = " , imu.get_accz())
+                print("accx = ", imu.get_accx())
+                print("accy = ", imu.get_accy())
+                print("accz = ", imu.get_accz())
 
-                print("magx = " , imu.get_magx())
-                print("magy = " , imu.get_magy())
-                print("magz = " , imu.get_magz())
+                print("magx = ", imu.get_magx())
+                print("magy = ", imu.get_magy())
+                print("magz = ", imu.get_magz())
 
                 print()
                 time.sleep(1)
         except KeyboardInterrupt:
             imu.stop()
     test()
-
