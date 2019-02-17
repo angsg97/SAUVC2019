@@ -28,8 +28,9 @@ import time
 class IMU(threading.Thread):
     # This class then inherits the threading.Thread class
 
-    def __init__(self):
+    def __init__(self, port):
         threading.Thread.__init__(self)
+        self.port = port
 
         self.yaw = 0
         self.pitch = 0
@@ -54,8 +55,8 @@ class IMU(threading.Thread):
         self.stopped = True
 
     def run(self):
-        self.proc = subprocess.Popen(os.path.join(
-            sys.path[0], './imu-core'), bufsize=1024, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        self.proc = subprocess.Popen([os.path.join(
+            sys.path[0], './imu-core'), self.port], bufsize=1024, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         # once the IMU class has been instantiated,
         # allow './SAUVC' program to run and read the values from the terminal
         while not self.stopped:
@@ -129,7 +130,7 @@ class IMU(threading.Thread):
 if __name__ == '__main__':
     def test():
         try:
-            imu = IMU()
+            imu = IMU('/dev/tty0')
             imu.start()
             while True:
                 print("yaw = ", imu.get_yaw())
