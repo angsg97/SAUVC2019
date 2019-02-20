@@ -4,6 +4,19 @@ from tracking import CVManager
 from tracking import GateTrackerV3
 from mcu import MCU
 from imu import IMU
+import PID_SAUVC
+
+def add_list(list1, list2, list3 ,list4):
+    finalListValues = []
+    for i in range(5):
+        a = list1[i]
+        b = list2[i]
+        c = list3[i]
+        d = list4[i]
+
+        finalValues = a + b + c + d
+        finalListValues.append(finalValues)
+    return finalListValues
 
 def main():
     # read arguments
@@ -40,6 +53,13 @@ def main():
     cv.start()
     mcu.start()
     imu.start()
+
+    pidR = pidRoll(5, 0.1, 5) # 5, 0.1 , 5
+    pidP = pidPitch(5, 0.1, 8)# 5 ,0.1 ,8
+    pidD = pidDepth(5, 0.1, 5)
+    pidY = pidYaw(5, 0.1, 5)
+    motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
+
     try:
         motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
         while True:
@@ -49,6 +69,28 @@ def main():
             pitch = imu.get_pitch()
             roll = imu.get_roll()
             yaw = imu.get_yaw()
+
+            pidR = pidRoll(0,0,0)
+            pidP = pidPitch(0,0,0)
+            pidD = pidDepth(0,0,0)
+            pidY = pidYaw(0,0,0)
+
+            pidR.getSetValues(roll)
+            pidP.getSetValues(pitch)
+            pidD.getSetValues(depth)
+            pidy.getSetValues(gate)
+            finalPidValues = add_list(pidR.start(), pidP.start(), pidD.start(), pidY.start())
+
+            sentValues  = []
+            for values in finalPidValues:
+                subValues = values / 4
+                sentValues.append(subValues)
+
+            motor_fl = sentValues[0]
+            motor_fr = sentValues[1]
+            motor_bl = sentValues[2]
+            motor_br = sentValues[3]
+            motor_t = sentValues[4]
 
             # Put control codes here
 
