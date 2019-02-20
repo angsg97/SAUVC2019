@@ -34,7 +34,7 @@ def main():
     mcu = MCU("/dev/ttyUSB0")
 
     # inits IMU
-    imu = IMU()
+    imu = IMU("/dev/ttyUSB1")
 
     # start subprocess
     cv.start()
