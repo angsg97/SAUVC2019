@@ -105,7 +105,7 @@ class CVManager(threading.Thread):
         self.stopped = True
         if self.path:
             self.out.release()
-        if self.server:
+        if self.server_enabled:
             self.server.stop()
 
     @staticmethod
