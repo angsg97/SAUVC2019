@@ -12,7 +12,6 @@ from tracking import CVManager
 from tracking import Blank
 from mcu import MCU
 
-OVERALL_SPEED = 0.4
 KEY_MAP = {
     't': (1, 0, 0, 0, 0),
     'g': (-1, 0, 0, 0, 0),
@@ -73,6 +72,7 @@ def main():
     cv = CVManager(VideoStream(src=0), server_port=3333)
     cv.add_core("Stream", Blank(), True)
     cv.start()
+    overall_speed = 0.4
     while not key_listener.stopped:
         key, t = key_listener.get_key()
 
@@ -80,11 +80,19 @@ def main():
         # stop the car
         if time.time() - t > 0.05:
             mcu.set_motors(0, 0, 0, 0, 0)
+        else:
+            if key == 'm':
+                overall_speed += 0.01
+                print("Speed: ", overall_speed)
+            if key == 'n':
+                overall_speed -= 0.01
+                print("Speed: ", overall_speed)
 
-        # map keyboared to mcu actions
-        action = KEY_MAP.setdefault(key, (0, 0, 0, 0, 0))
-        action = [i * OVERALL_SPEED for i in action] # reduce speed
-        mcu.set_motors(action[0], action[1], action[2], action[3], action[4])
+            # map keyboared to mcu actions
+            action = KEY_MAP.setdefault(key, (0, 0, 0, 0, 0))
+            action = [i * overall_speed for i in action] # reduce speed
+            print(action)
+            mcu.set_motors(action[0], action[1], action[2], action[3], action[4])
 
         time.sleep(0.04)
     cv.stop()
