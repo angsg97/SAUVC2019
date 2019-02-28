@@ -56,7 +56,7 @@ class IMU(threading.Thread):
 
     def run(self):
         self.proc = subprocess.Popen([os.path.join(
-            sys.path[0], './imu-core'), self.port], bufsize=1024, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            sys.path[0], 'imu/imu-core'), self.port], bufsize=1024, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         # once the IMU class has been instantiated,
         # allow './SAUVC' program to run and read the values from the terminal
         while not self.stopped:

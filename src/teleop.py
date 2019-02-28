@@ -74,6 +74,7 @@ class KeyListener(threading.Thread):
 def main():
     """ main body """
     mcu = MCU("/dev/ttyUSB0")
+    mcu.start()
     key_listener = KeyListener()
     key_listener.start()
     # prepare video streaming
@@ -91,17 +92,17 @@ def main():
         else:
             if key == 'm':
                 overall_speed += 0.01
-                print("Speed: ", overall_speed)
+                print("Speed: ", overall_speed, end='\r\n')
             if key == 'n':
                 overall_speed -= 0.01
-                print("Speed: ", overall_speed)
+                print("Speed: ", overall_speed, end='\r\n')
 
             # map keyboared to mcu actions
             action = KEY_MAP.setdefault(key, (0, 0, 0, 0, 0))
             action = [i * overall_speed for i in action] # reduce speed
-            print(action)
+            print(action, end='\r\n')
             mcu.set_motors(action[0], action[1], action[2], action[3], action[4])
-
+        print("Depth: ", mcu.get_depth(), end='\r\n')
         time.sleep(0.04)
     cv.stop()
 
