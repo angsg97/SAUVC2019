@@ -3,6 +3,7 @@ a thread that constantly read from Xbee and save data to some variables then sen
 other functions (set_depth and get_angle)just returns those variables and update motor speeds.
 '''
 import time
+import traceback
 from threading import Thread
 from digi.xbee.devices import XBeeDevice
 
@@ -36,6 +37,7 @@ class MCU(Thread):
             except Exception as e:
                 # print("Something is wrong")
                 print('Error', e, end='\r\n')
+                traceback.print_exc()
 
             motor_data = [self.m_front_left, self.m_front_right,
                           self.m_back_left, self.m_back_right, self.m_tail]
