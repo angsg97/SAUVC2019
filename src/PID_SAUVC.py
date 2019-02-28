@@ -107,15 +107,15 @@ class pidRoll(pid):
             #Thus, we make motorBottomLeft push forward
             #and the motorBottomRight to push in reverse.
             #here we assume that the max pidOutput is 100
-            return(0 , 0 ,motorBottomLeft , motorBottomRight, 0 )
+            return(motorBottomLeft , motorBottomRight,0,0,0)
         elif self.output > 100:
             motorBottomLeft = 1
             motorBottomRight = -1
-            return (0, 0, motorBottomLeft, motorBottomRight, 0)
+            return (motorBottomLeft , motorBottomRight,0,0,0)
         elif self.output < -100:
             motorBottomLeft = -1
             motorBottomRight = 1
-            return (0, 0, motorBottomLeft, motorBottomRight, 0)
+            return (motorBottomLeft , motorBottomRight,0,0,0)
 
 
 
@@ -130,17 +130,17 @@ class pidPitch(pid):
             motorBottomLeft =  self.output/(100)
             motorBottomRight = self.output/(100)
             motorTail =  self.output/(-100)
-            return (0, 0, motorBottomLeft, motorBottomRight, motorTail)
+            return (motorBottomLeft, motorBottomRight,0,0, motorTail)
         elif self.output > 100:
             motorBottomLeft = 1
             motorBottomRight = 1
             motorTail = -1
-            return (0, 0, motorBottomLeft, motorBottomRight, motorTail)
+            return (motorBottomLeft, motorBottomRight,0,0, motorTail)
         elif self.output < -100:
             motorBottomLeft = -1
             motorBottomRight = -1
             motorTail = 1
-            return (0, 0, motorBottomLeft, motorBottomRight, motorTail)
+            return (motorBottomLeft, motorBottomRight,0,0, motorTail)
 
 
 
@@ -161,7 +161,7 @@ class pidDepth(pid):
         motorBottomLeft = self.speed
         motorBottomRight = self.speed
         motorTail = self.speed
-        return [0 , 0 ,motorBottomLeft , motorBottomRight , motorTail ]
+        return (motorBottomLeft, motorBottomRight,0,0, motorTail)
 
 
 class pidYaw(pid):
@@ -178,7 +178,7 @@ class pidYaw(pid):
 
         motorForwardRight = self.speed
         motorForwardLeft = -self.speed
-        return [motorForwardLeft ,motorForwardRight , 0 , 0 ,0]
+        return [0,0,motorForwardLeft ,motorForwardRight ,0]
 
 
 
