@@ -33,9 +33,9 @@ class MCU(Thread):
             try:
                 self.depth = device.read_data(0).data.decode()
                 # print("[R] DEPTH: {}".format(depth))
-            except:
+            except Exception as e:
                 # print("Something is wrong")
-                pass
+                print(e, end='\r\n')
 
             motor_data = [self.m_front_left, self.m_front_right,
                           self.m_back_left, self.m_back_right, self.m_tail]
