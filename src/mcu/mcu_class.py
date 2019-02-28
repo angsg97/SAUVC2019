@@ -31,7 +31,7 @@ class MCU(Thread):
         self.device.open()
         while not self.stopped:
             try:
-                self.depth = device.read_data(0).data.decode()
+                self.depth = self.device.read_data(0).data.decode()
                 # print("[R] DEPTH: {}".format(depth))
             except Exception as e:
                 # print("Something is wrong")
