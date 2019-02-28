@@ -30,11 +30,12 @@ class MCU(Thread):
         '''
         self.device.open()
         while not self.stopped:
+            print('a')
             try:
                 self.depth = device.read_data(0).data.decode()
                 print("[R] DEPTH: {}".format(depth))
             except:
-                pass
+                print("Something is wrong")
 
             motor_data = [self.m_front_left, self.m_front_right,
                           self.m_back_left, self.m_back_right, self.m_tail]
