@@ -4,7 +4,7 @@ from tracking import CVManager
 from tracking import GateTrackerV3
 from mcu import MCU
 from imu import IMU
-import PID_SAUVC
+from pid import *
 
 def add_list(list1, list2, list3 ,list4):
     finalListValues = []
@@ -78,7 +78,7 @@ def main():
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
             pidD.getSetValues(depth)
-            pidy.getSetValues(gate)
+            pidY.getSetValues(gate)
             finalPidValues = add_list(pidR.start(), pidP.start(), pidD.start(), pidY.start())
 
             sentValues  = []

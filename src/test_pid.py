@@ -2,7 +2,7 @@ import time
 import math
 import matplotlib.pyplot as plt
 from collections import deque
-from PID_SAUVC import *
+from pid import *
 
 class Plotter:
     def __init__(self):
@@ -110,10 +110,10 @@ def main():
         motor_br = sentValues[3]
         motor_t = sentValues[4]
 
-        cv.update(motor_fr - motor_fl)
-        depth_sensor.update(motor_bl + motor_br + motor_t)
-        pitch_sensor.update(motor_bl + motor_br - motor_t)
-        roll_sensor.update(motor_bl - motor_br)
+        cv.update(motor_br - motor_bl)
+        depth_sensor.update(motor_fl + motor_fr + motor_t)
+        pitch_sensor.update(motor_fl + motor_fr - motor_t)
+        roll_sensor.update(motor_fl - motor_fr)
         #yaw_sensor.update(motor_fl - motor_fr)
         plotter.draw()
 

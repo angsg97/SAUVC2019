@@ -1,10 +1,7 @@
+import math
 import cv2
 import numpy as np
-from time import sleep
-import math
-import argparse
-import time
-from tracking import *
+from tracking import ITrackingCore
 
 class TwoPointLine:
     def __init__(self, cv_line):
@@ -12,7 +9,6 @@ class TwoPointLine:
 
     def reverse(self):
         self.x1, self.y1, self.x2, self.y2 = self.x2, self.y2, self.x1, self.y1
-
 
 class Vector:
     def __init__(self, x, y):
@@ -37,7 +33,7 @@ class Vector:
         return Vector((self.x + other_vec.x), (self.y + other_vec.y))
 
 
-class Final(ITrackingCore):
+class Flare(ITrackingCore):
     def __inital_filter(self,line):
         minimal_dy = 40
         maximal_dx = 20
@@ -90,63 +86,31 @@ class Final(ITrackingCore):
         # edges = cv2.dilate(edges, np.ones((3, 3), np.uint8))
         minLineLength, maxLineGap = 20, 5
         lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 20, None, minLineLength, maxLineGap)
-        for l in lines:
-            l1 = TwoPointLine(l[0])
-            cv2.line(origin,(l1.x1,l1.y1),(l1.x2,l1.y2), (0, 255, 0), 1)
-        vertical_lines = []
-        scores= {}
-        for line in lines:
-            line1 = TwoPointLine(line[0])
-            if self.__inital_filter(line1):
-                vertical_lines.append(line1)
-        for line1 in vertical_lines:
-            for line2 in vertical_lines:
-                scores[self.__secondary_filter(line1,line2)] = (line1,line2)
-        keylist = list(scores.keys())
-        if len(keylist) > 0:
-            keylist.sort()
-            final_line1,final_line2 = scores[keylist[-1]]
-            final_line = TwoPointLine((
-                int((final_line1.x1 + final_line2.x1)/2),
-                int((final_line1.x2 + final_line2.x2)/2),
-                int((final_line1.y1 + final_line2.y1)/2),
-                int((final_line1.y2 + final_line2.y2)/2) ))
-            final_line = final_line1
+        if not lines is None:
+            for l in lines:
+                l1 = TwoPointLine(l[0])
+                cv2.line(origin,(l1.x1,l1.y1),(l1.x2,l1.y2), (0, 255, 0), 1)
+            vertical_lines = []
+            scores= {}
+            for line in lines:
+                line1 = TwoPointLine(line[0])
+                if self.__inital_filter(line1):
+                    vertical_lines.append(line1)
+            for line1 in vertical_lines:
+                for line2 in vertical_lines:
+                    scores[self.__secondary_filter(line1,line2)] = (line1,line2)
+            keylist = list(scores.keys())
+            if len(keylist) > 0:
+                keylist.sort()
+                final_line1,final_line2 = scores[keylist[-1]]
+                final_line = TwoPointLine((
+                    int((final_line1.x1 + final_line2.x1)/2),
+                    int((final_line1.x2 + final_line2.x2)/2),
+                    int((final_line1.y1 + final_line2.y1)/2),
+                    int((final_line1.y2 + final_line2.y2)/2) ))
+                final_line = final_line1
 
-            cv2.line(origin, (final_line.x1, final_line.y1), (final_line.x2, final_line.y2), (0, 0, 255), 3)
-            print((final_line.x1, final_line.y1), (final_line.x2, final_line.y2))
-            print(keylist[-1])
+                cv2.line(origin, (final_line.x1, final_line.y1), (final_line.x2, final_line.y2), (0, 0, 255), 3)
+                print((final_line.x1, final_line.y1), (final_line.x2, final_line.y2))
+                print(keylist[-1])
         return (0, 0, 0, [origin, edges])
-
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-v", "--video",
-                    help="path to the (optional) video file")
-    ap.add_argument("-c", "--camera",
-                    help="index of camera")
-    ap.add_argument("-o","--output",
-                    help="path to save the video")
-    args = vars(ap.parse_args())
-    if args.get("video", False):
-        vs = args.get("video", False)
-    elif args.get("camera", False):
-        vs = int(args.get("camera", False))
-    else:
-        vs = 0
-
-    cv = CVManager(vs,                  # choose the first web camera as the source
-                   enable_imshow=True,  # enable image show windows
-                   delay=5,outputfolder=args.get("output"))
-    cv.add_core("Flare", Final(), True)
-    cv.start()
-    try:
-        while True:
-            time.sleep(0.1)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        print("Stopping remaining threads...")
-        cv.stop()
-
-if __name__ == '__main__':
-    main()
