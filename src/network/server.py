@@ -56,7 +56,7 @@ class Server(threading.Thread):
         Returns:
             A list of str contains keys from clients
         """
-        return self.waitting_for.keys()
+        return list(self.waitting_for.keys())
 
     def offer_data(self, key, data):
         """ Offer data w.r.t certain key
@@ -64,11 +64,12 @@ class Server(threading.Thread):
             key: the key of the original request
             data: respond to the request in bytes
         """
-        # save prepared data to the dict
-        self.waitting_for[key] = data
-        # set the data prepared event to notify waiting threads
-        self.data_prepared_event.set()
-        self.data_prepared_event = threading.Event()
+        if key in self.waitting_for.keys():
+            # save prepared data to the dict
+            self.waitting_for[key] = data
+            # set the data prepared event to notify waiting threads
+            self.data_prepared_event.set()
+            self.data_prepared_event = threading.Event()
 
     def __tcp_link(self, sock):
         """ A thread created for each request

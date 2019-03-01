@@ -1,1 +1,1 @@
-from mcu.mcu_class import MCU
+from mcu.mcu_tcp import MCU
