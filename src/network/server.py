@@ -82,5 +82,6 @@ class Server(threading.Thread):
                 self.data_prepared_event.wait()
                 if not self.waitting_for[key] is None:
                     sock.send(self.waitting_for[key]) # send data back
+                    del self.waitting_for[key]
                     break
         sock.close()
