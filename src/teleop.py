@@ -109,6 +109,7 @@ def main():
         print('Action:', action, 'Depth:', mcu.get_depth(), 'Speed:', round(overall_speed, 2), end='\r\n')
         time.sleep(0.04)
     cv.stop()
+    mcu.stop()
 
 if __name__ == "__main__":
     main()

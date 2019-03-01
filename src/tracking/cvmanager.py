@@ -102,9 +102,12 @@ class CVManager(threading.Thread):
 
     def stop(self):
         """ Stop the Cv manager """
+        if self.stopped:
+            return
         self.stopped = True
         if self.path:
             self.out.release()
+            print('Video released')
         if self.server_enabled:
             self.server.stop()
 
