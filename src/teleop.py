@@ -98,9 +98,9 @@ def main():
 
             # map keyboared to mcu actions
             action = KEY_MAP.setdefault(key, (0, 0, 0, 0, 0))
-            action = [i * overall_speed for i in action] # reduce speed
+            action = [round(i * overall_speed, 2) for i in action] # reduce speed
         mcu.set_motors(action[0], action[1], action[2], action[3], action[4])
-        print('Action:', action, 'Depth:', mcu.get_depth(), 'Speed:', overall_speed, end='\r\n')
+        print('Action:', action, 'Depth:', mcu.get_depth(), 'Speed:', round(overall_speed, 2), end='\r\n')
         time.sleep(0.04)
     cv.stop()
 
