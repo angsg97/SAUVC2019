@@ -44,10 +44,10 @@ def main():
     cv.add_core("GateTracker", GateTrackerV3(), True)
 
     # inits MCU
-    mcu = MCU("/dev/ttyUSB0")
+    mcu = MCU(2222)
 
     # inits IMU
-    imu = IMU("/dev/ttyUSB1")
+    imu = IMU("/dev/ttyUSB_IMU")
 
     # start subprocess
     cv.start()

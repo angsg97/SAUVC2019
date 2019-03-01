@@ -73,7 +73,7 @@ class KeyListener(threading.Thread):
 
 def main():
     """ main body """
-    mcu = MCU("/dev/ttyUSB0")
+    mcu = MCU(2222)
     mcu.start()
     key_listener = KeyListener()
     key_listener.start()
@@ -102,7 +102,7 @@ def main():
             action = [i * overall_speed for i in action] # reduce speed
             print(action, end='\r\n')
             mcu.set_motors(action[0], action[1], action[2], action[3], action[4])
-        print("Depth: ", mcu.get_depth(), end='\r\n')
+        # print("Depth: ", mcu.get_depth(), end='\r\n')
         time.sleep(0.04)
     cv.stop()
 

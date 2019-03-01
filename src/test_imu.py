@@ -10,7 +10,10 @@ def main():
     args = vars(ap.parse_args())
 
     # inits IMU
-    imu = IMU(args.get("port", '/dev/ttyUSB1'))
+    port = args.get('port', None)
+    if port is None:
+        port = '/dev/ttyUSB_IMU'
+    imu = IMU(port)
 
     # start subprocess
     imu.start()
