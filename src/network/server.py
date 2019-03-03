@@ -12,7 +12,8 @@ class Server(threading.Thread):
         """
         threading.Thread.__init__(self)
         self.port = port
-        self.waitting_for = {}
+        self.waitting_for = []
+        self.data_buffer = {}
         self.data = None
         self.data_prepared_event = threading.Event()
         self.stopped = True
@@ -56,7 +57,7 @@ class Server(threading.Thread):
         Returns:
             A list of str contains keys from clients
         """
-        return list(self.waitting_for.keys())
+        return self.waitting_for.copy()
 
     def offer_data(self, key, data):
         """ Offer data w.r.t certain key
@@ -64,9 +65,10 @@ class Server(threading.Thread):
             key: the key of the original request
             data: respond to the request in bytes
         """
-        if key in self.waitting_for.keys():
+        if key in self.waitting_for:
             # save prepared data to the dict
-            self.waitting_for[key] = data
+            self.waitting_for.remove(key)
+            self.data_buffer[key] = data
             # set the data prepared event to notify waiting threads
             self.data_prepared_event.set()
             self.data_prepared_event = threading.Event()
@@ -78,11 +80,11 @@ class Server(threading.Thread):
         recv = sock.recv(128) # receive key in bytes
         if not recv is None and not self.stopped:
             key = bytes.decode(recv) # convert bytes to str
-            self.waitting_for[key] = None
+            self.waitting_for.append(key)
             while True:
                 self.data_prepared_event.wait()
-                if not self.waitting_for[key] is None:
-                    sock.send(self.waitting_for[key]) # send data back
-                    del self.waitting_for[key]
+                if key in self.data_buffer.keys():
+                    sock.send(self.data_buffer[key]) # send data back
+                    del self.data_buffer[key]
                     break
         sock.close()
