@@ -89,21 +89,18 @@ def main():
         # if the key is released more than 0.05s
         # stop the car
         if time.time() - t > 0.05:
-            mcu.set_motors(0, 0, 0, 0, 0)
+            action = (0, 0, 0, 0, 0)
         else:
             if key == 'm':
                 overall_speed += 0.01
-                print("Speed: ", overall_speed, end='\r\n')
             if key == 'n':
                 overall_speed -= 0.01
-                print("Speed: ", overall_speed, end='\r\n')
 
             # map keyboared to mcu actions
             action = KEY_MAP.setdefault(key, (0, 0, 0, 0, 0))
             action = [i * overall_speed for i in action] # reduce speed
-            print(action, end='\r\n')
-            mcu.set_motors(action[0], action[1], action[2], action[3], action[4])
-        # print("Depth: ", mcu.get_depth(), end='\r\n')
+        mcu.set_motors(action[0], action[1], action[2], action[3], action[4])
+        print('Action:', action, 'Depth:', mcu.get_depth(), 'Speed:', overall_speed, end='\r\n')
         time.sleep(0.04)
     cv.stop()
 
