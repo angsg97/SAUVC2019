@@ -75,6 +75,7 @@ def main():
     """ main body """
     mcu = MCU(2222)
     mcu.start()
+    mcu.wait()
     key_listener = KeyListener()
     key_listener.start()
     # prepare video streaming

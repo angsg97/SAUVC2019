@@ -86,6 +86,12 @@ class MCU(Thread):
             (data - min_data)/diff_data * diff_send + min_send)
         return converted
 
+    def wait(self):
+        print('waiting for MCU connection....')
+        while not self.connected:
+            time.sleep(0.1)
+        print('MCU connected')
+
 
 def test():
     pass

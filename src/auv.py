@@ -51,8 +51,9 @@ def main():
 
     # start subprocess
     cv.start()
-    mcu.start()
     imu.start()
+    mcu.start()
+    mcu.wait()
 
     pidR = pidRoll(5, 0.1, 5) # 5, 0.1 , 5
     pidP = pidPitch(5, 0.1, 8)# 5 ,0.1 ,8

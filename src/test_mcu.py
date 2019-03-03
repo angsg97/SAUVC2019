@@ -11,9 +11,7 @@ def main():
     power = 0
     step = 0.1
 
-    print('watting for connection....')
-    while not mcu.connected:
-        time.sleep(0.1)
+    mcu.wait()
 
     while True:
         print('Depth:', mcu.get_depth())
