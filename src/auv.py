@@ -55,8 +55,8 @@ def main():
     mcu.start()
     mcu.wait()
 
-    pidR = pidRoll(0, 0, 0) # 5, 0.1 , 5
-    pidP = pidPitch(0, 0, 0)# 5 ,0.1 ,8
+    pidR = pidRoll(1, 0, 0) # 5, 0.1 , 5
+    pidP = pidPitch(1, 0, 0)# 5 ,0.1 ,8
     pidD = pidDepth(1, 0, 0)
     pidY = pidYaw(0, 0, 0)
     motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
@@ -107,7 +107,7 @@ def main():
             print('Pitch:', pitch)
             print('Roll:', roll)
             print('Yaw:', yaw)
-            print('Motors:', (motor_fl, motor_fr, motor_bl, motor_br, motor_t))
+            print('Motors: %.2f %.2f %.2f %.2f %.2f'%(motor_fl, motor_fr, motor_bl, motor_br, motor_t))
             print()
             time.sleep(0.1)
     except KeyboardInterrupt:
