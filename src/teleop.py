@@ -2,6 +2,7 @@
 and steam back the camera image at port 3333 (use monitor.py to watch)
 """
 import sys
+import argparse
 import select
 import termios # only on Linux
 import tty
@@ -73,13 +74,18 @@ class KeyListener(threading.Thread):
 
 def main():
     """ main body """
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-o", "--output",
+                    help="path to save the video")
+    args = vars(ap.parse_args())
+
     mcu = MCU(2222)
     mcu.start()
     mcu.wait()
     key_listener = KeyListener()
     key_listener.start()
     # prepare video streaming
-    cv = CVManager(VideoStream(src=0), server_port=3333)
+    cv = CVManager(VideoStream(src=0), server_port=3333, outputfolder=args.get('output'))
     cv.add_core("Stream", Blank(), True)
     cv.start()
     overall_speed = 0.4
