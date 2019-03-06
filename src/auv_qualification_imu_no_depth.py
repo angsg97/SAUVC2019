@@ -73,8 +73,8 @@ def main():
                 subValues = values
                 sentValues.append(subValues)
             
-            if abs((time.time() - start_time) % 10):
-                depth_speed = 0.2
+            if abs((time.time() - start_time) % 5) < 1:
+                depth_speed = 0.4
             else:
                 depth_speed = 0
 

@@ -35,7 +35,7 @@ class MCU(Thread):
                 if len(nums) == 2:
                     self.connected = True
                     self.depth = int(nums[0])
-                    self.angle = int(nums[1])
+                    self.angle = float(nums[1])
                 # self.depth = 
                 response = "{},{},{},{},{}\n".format(
                     self.convert(-self.m_front_left),

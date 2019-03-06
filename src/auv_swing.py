@@ -36,8 +36,10 @@ def main():
     set_depth = float(args.get('depth', 0))
     time_after_passing = float(args.get('time', 0))
     time_force_turn = float(args.get('forceturn', 0))
-    time_force_turn_2 = float(args.get('--forceturn2', 0))
+    time_force_turn_2 = float(args.get('forceturn2', 0))
     angle_to_turn = float(args.get('angle', 0))
+
+    print(time_force_turn_2)
 
     # inits CV
     cv = CVManager(0,                  # choose the first web camera as the source
@@ -116,7 +118,7 @@ def main():
                     cv.disable_core('GateTracker')
                     timer_for_state1 = time.time()
                 elif time.time() - timer_for_state1 > time_after_passing:
-                    state = 
+                    state = 2
                     timer_for_state2_2 = time.time()
                     cv.enable_core('Flare')
                 depth = mcu.get_depth()
@@ -147,8 +149,10 @@ def main():
                         timer_for_state2 = time.time()
                 if timer_for_state2 != 0 and time.time() - timer_for_state2 > 10:
                     state = 3
+                    print('found flare')
                 if time.time() - timer_for_state2_2 > time_force_turn_2:
                     state = 3
+                    print('out of time')
             # surfacing
             else:
                 depth = 500

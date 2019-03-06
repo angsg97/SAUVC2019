@@ -71,7 +71,7 @@ def main():
 
     pidR = pidRoll(1, 0.2, 0) # 1, 0 , 0
     pidP = pidPitch(0.6, 0, 0)# 5 ,0.1 ,8
-    pidD = pidDepth(0.5, 0, 0)
+    pidD = pidDepth(0, 0, 0)
     pidY = pidYaw(1, 0.4, 0)
     motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
 
@@ -91,7 +91,7 @@ def main():
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
-            pidD.getSetValues(70-depth)
+            pidD.getSetValues(100-depth)
             pidY.getSetValues(-yaw)
             finalPidValues = add_list(pidR.start(), pidP.start(), pidD.start(), pidY.start())
 
