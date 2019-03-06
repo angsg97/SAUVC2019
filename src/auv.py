@@ -71,6 +71,12 @@ def main():
             roll = imu.get_roll()
             yaw = imu.get_yaw()
             
+            if roll is None:
+                roll = 0
+            if pitch is None:
+                pitch = 0
+            if gate is None:
+                gate = 0
             if depth is None:
                 depth = 0
 
