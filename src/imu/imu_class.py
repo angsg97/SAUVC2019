@@ -33,6 +33,7 @@ class IMU(threading.Thread):
         self.port = port
 
         self.yaw = 0
+        self.delta_yaw = 0
         self.pitch = 0
         self.roll = 0
 
@@ -90,7 +91,10 @@ class IMU(threading.Thread):
         self.finalParse = (-1, -1, -1)
 
     def get_yaw(self):
-        return self.yaw
+        return (self.yaw - self.delta_yaw + 180) % 360 - 180
+
+    def reset_yaw(self, new_yaw=0):
+        self.delta_yaw = self.yaw - new_yaw
 
     def get_pitch(self):
         return self.pitch

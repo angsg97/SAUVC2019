@@ -64,21 +64,17 @@ def main():
     try:
         motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
         while True:
-            gate = cv.get_result("GateTracker")[0]
+            gate = cv.get_result("GateTracker")[0] / 4 # roughly map it to the range of 
             depth = mcu.get_depth()
             pinger = mcu.get_angle()
             pitch = imu.get_pitch()
             roll = imu.get_roll()
             yaw = imu.get_yaw()
-            
-            if roll is None:
-                roll = 0
-            if pitch is None:
-                pitch = 0
+
             if gate is None:
-                gate = 0
-            if depth is None:
-                depth = 0
+                gate = yaw
+            else:
+                imu.reset_yaw(gate)
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
