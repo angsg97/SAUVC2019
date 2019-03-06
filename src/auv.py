@@ -55,10 +55,10 @@ def main():
     mcu.start()
     mcu.wait()
 
-    pidR = pidRoll(5, 0.1, 5) # 5, 0.1 , 5
-    pidP = pidPitch(5, 0.1, 8)# 5 ,0.1 ,8
+    pidR = pidRoll(0, 0, 0) # 5, 0.1 , 5
+    pidP = pidPitch(0, 0, 0)# 5 ,0.1 ,8
     pidD = pidDepth(5, 0.1, 5)
-    pidY = pidYaw(5, 0.1, 5)
+    pidY = pidYaw(0, 0, 0)
     motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
 
     try:
@@ -70,21 +70,19 @@ def main():
             pitch = imu.get_pitch()
             roll = imu.get_roll()
             yaw = imu.get_yaw()
-
-            pidR = pidRoll(0,0,0)
-            pidP = pidPitch(0,0,0)
-            pidD = pidDepth(0,0,0)
-            pidY = pidYaw(0,0,0)
+            
+            if depth is None:
+                depth = 0
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
-            pidD.getSetValues(depth)
+            pidD.getSetValues(30-depth)
             pidY.getSetValues(gate)
             finalPidValues = add_list(pidR.start(), pidP.start(), pidD.start(), pidY.start())
 
             sentValues  = []
             for values in finalPidValues:
-                subValues = values / 4
+                subValues = values #/ 4
                 sentValues.append(subValues)
 
             motor_fl = sentValues[0]
@@ -105,7 +103,7 @@ def main():
             print('Yaw:', yaw)
             print('Motors:', (motor_fl, motor_fr, motor_bl, motor_br, motor_t))
             print()
-            time.sleep(0.05)
+            time.sleep(0.1)
     except KeyboardInterrupt:
         pass
     finally:
