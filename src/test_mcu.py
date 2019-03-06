@@ -9,7 +9,7 @@ def main():
     mcu = MCU(2222)
     mcu.start()
     power = 0
-    step = 0
+    step = 0.02
 
     mcu.wait()
 
@@ -17,7 +17,7 @@ def main():
         print('Depth:', mcu.get_depth())
         print('Angle:', mcu.get_angle())
         power += step
-        if abs(power) > 0.5:
+        if abs(power) > 0.3:
             step = -step
         mcu.set_motors(power, power, power, power, power)
         print('Power:', power)
