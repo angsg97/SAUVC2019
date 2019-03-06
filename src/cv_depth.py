@@ -11,19 +11,10 @@ from tracking import ITrackingCore
 class DepthCore(ITrackingCore):
     def find(self, frame):
         b, g, r = cv2.split(frame)
-        blurred = cv2.GaussianBlur(b, (41, 21), 0)
+        blurred = cv2.GaussianBlur(b, (41, 41), 0)
 
-        col = cv2.resize(blurred, (1, 30), 0)
-        max_pixel = 255
-        max_index = 0
-        #print(col)
-        for i in range(len(col)):
-            if col[i][0] < max_pixel:
-                max_pixel = col[i][0]
-                max_index = i
-            #print(col[i][0])
-        col = cv2.resize(col, (320, 360), 0)
-        return max_index, None, None, [b, blurred, col]
+        col = cv2.resize(b, (1, 1), 0)
+        return col[0][0], None, None, []
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-v", "--video",
