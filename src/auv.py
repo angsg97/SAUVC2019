@@ -55,16 +55,18 @@ def main():
     mcu.start()
     mcu.wait()
 
+    imu.reset_yaw()
+
     pidR = pidRoll(1, 0, 0) # 5, 0.1 , 5
     pidP = pidPitch(1, 0, 0)# 5 ,0.1 ,8
     pidD = pidDepth(1, 0, 0)
-    pidY = pidYaw(0, 0, 0)
+    pidY = pidYaw(1, 0, 0)
     motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
 
     try:
         motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
         while True:
-            gate = cv.get_result("GateTracker")[0] / 4 # roughly map it to the range of 
+            gate = cv.get_result("GateTracker")[0] 
             depth = mcu.get_depth()
             pinger = mcu.get_angle()
             pitch = imu.get_pitch()
@@ -74,6 +76,7 @@ def main():
             if gate is None:
                 gate = yaw
             else:
+                gate /= 4
                 imu.reset_yaw(gate)
 
             pidR.getSetValues(roll)
