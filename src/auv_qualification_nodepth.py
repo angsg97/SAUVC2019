@@ -38,8 +38,8 @@ def main():
     else:
         vs = 0
     
-    set_speed = args.get('speed', 0)
-    set_time = args.get('time', 0)
+    set_speed = float(args.get('speed', 0))
+    set_time = float(args.get('time', 0))
 
     print('Speed', set_speed)
     print('Time', set_time)
@@ -48,6 +48,7 @@ def main():
         set_speed = 0
     set_speed = float(set_speed)
     speed = 0
+    yaw = 0
 
     # inits CV
     cv = CVManager(vs,                  # choose the first web camera as the source
@@ -69,6 +70,7 @@ def main():
     mcu.start()
 
     mcu.wait()
+    time.sleep(3)
 
     start_time = time.time()
     depth_speed = 0
@@ -92,7 +94,7 @@ def main():
             pitch = imu.get_pitch()
             roll = imu.get_roll()
 
-            if gate_passed or gate is None: # just go straight
+            if True or gate_passed or gate is None: # just go straight
                 yaw = imu.get_yaw2(0)
             else:
                 if gate != last_cv_gate:
@@ -109,8 +111,8 @@ def main():
             else:
                 speed = set_speed
             
-            if abs((time.time() - start_time) % 5) < 1 and time.time() - start_time > 10:
-                depth_speed = 0.4
+            if abs((time.time() - start_time) % 5) < 1:
+                depth_speed = 0.45
             else:
                 depth_speed = 0
 

@@ -47,8 +47,8 @@ def main():
     else:
         vs = 0
     
-    set_speed = args.get('speed', 0)
-    set_time = args.get('time', 0)
+    set_speed = float(args.get('speed', 0))
+    set_time = float(args.get('time', 0))
 
     print('Speed', set_speed)
     print('Time', set_time)
@@ -102,8 +102,8 @@ def main():
             pitch = imu.get_pitch()
             roll = imu.get_roll()
 
-            if not cv.get_result('EStop') is None:
-                if cv.get_result('EStop') < 40:
+            if not cv.get_result('EStop')[0] is None:
+                if cv.get_result('EStop')[0] < 20:
                     break
 
             if gate_passed or gate is None: # just go straight
