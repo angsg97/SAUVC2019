@@ -103,7 +103,7 @@ def main():
             else:
                 speed = set_speed
             
-            if abs((time.time() - start_time) % 5) < 1:
+            if abs((time.time() - start_time) % 5) < 1 and time.time() - start_time > 10:
                 depth_speed = 0.4
             else:
                 depth_speed = 0
