@@ -37,10 +37,11 @@ def main():
     else:
         vs = 0
     
-    speed = args.get('speed', 0)
-    if speed is None:
-        speed = 0
-    speed = float(speed)
+    set_speed = args.get('speed', 0)
+    if set_speed is None:
+        set_speed = 0
+    set_speed = float(set_speed)
+    speed = 0
 
     # inits CV
     cv = CVManager(vs,                  # choose the first web camera as the source
@@ -83,14 +84,19 @@ def main():
             yaw = imu.get_yaw()
 
             if gate is None:
-                gate = yaw
+                pass # yaw = yaw
+                speed = set_speed / 2
             else:
-                gate /= 5
+                yaw = yaw + gate * 0.4
+                if abs(gate) < 20:
+                    speed = set_speed
+                else:
+                    speed = 0
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
             pidD.getSetValues(70-depth)
-            pidY.getSetValues(-gate)
+            pidY.getSetValues(-yaw)
             finalPidValues = add_list(pidR.start(), pidP.start(), pidD.start(), pidY.start())
 
             sentValues  = []
@@ -100,8 +106,8 @@ def main():
 
             motor_fl = sentValues[0]
             motor_fr = sentValues[1]
-            motor_bl = sentValues[2] + speed
-            motor_br = sentValues[3] + speed
+            motor_bl = sentValues[2] + set_speed
+            motor_br = sentValues[3] + set_speed
             motor_t = sentValues[4]
 
             # Put control codes here
