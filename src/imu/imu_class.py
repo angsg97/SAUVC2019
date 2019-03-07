@@ -70,7 +70,7 @@ class IMU(threading.Thread):
 
             if self.last_integration_time == 0:
                 self.last_integration_time = time.time()
-            self.yaw_integrated += self.angx * (time.time() - self.last_integration_time)
+            self.yaw_integrated += self.angz * (time.time() - self.last_integration_time)
             self.last_integration_time = time.time()
 
             self.output_parser("YawPitchRoll:")
