@@ -117,11 +117,13 @@ def main():
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
 
             if counter % 20 == 0:
+                print('Gate', gate)
                 print('Depth:', depth)
                 print('Pinger:', pinger)
                 print('Pitch:', pitch)
                 print('Roll:', roll)
-                print('Yaw:', yaw)
+                print('Yaw:', imu.get_yaw())
+                print('Yaw_sent:', yaw)
                 print('Motors: %.2f %.2f %.2f %.2f %.2f'%(motor_fl, motor_fr, motor_bl, motor_br, motor_t))
                 print()
             time.sleep(0.1)
