@@ -73,7 +73,7 @@ def main():
             roll = imu.get_roll()
             yaw = imu.get_yaw()
 
-            if gate is None:
+            if gate is None or True:
                 gate = yaw
             else:
                 gate /= 4
@@ -81,7 +81,7 @@ def main():
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
-            pidD.getSetValues(10-depth)
+            pidD.getSetValues(70-depth)
             pidY.getSetValues(gate)
             finalPidValues = add_list(pidR.start(), pidP.start(), pidD.start(), pidY.start())
 

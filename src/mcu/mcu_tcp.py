@@ -38,11 +38,11 @@ class MCU(Thread):
                     self.angle = int(nums[1])
                 # self.depth = 
                 response = "{},{},{},{},{}\n".format(
-                    self.convert(-self.m_front_left-0.3),
-                    self.convert(-self.m_front_right-0.3),
+                    self.convert(-self.m_front_left),
+                    self.convert(-self.m_front_right),
                     self.convert(self.m_back_left),
                     self.convert(self.m_back_right),
-                    self.convert(self.m_tail+0.2))
+                    self.convert(self.m_tail))
                 response = response.encode('utf-8')
                 server.offer_data(r, response)
                 break
