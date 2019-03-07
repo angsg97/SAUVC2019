@@ -75,7 +75,9 @@ def main():
 
     try:
         motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
+        counter = 0
         while True:
+            counter += 1
             gate = cv.get_result("GateTracker")[0] 
             depth = mcu.get_depth()
             pinger = mcu.get_angle()
@@ -114,14 +116,14 @@ def main():
 
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
 
-            print('Gate:', gate)
-            print('Depth:', depth)
-            print('Pinger:', pinger)
-            print('Pitch:', pitch)
-            print('Roll:', roll)
-            print('Yaw:', yaw)
-            print('Motors: %.2f %.2f %.2f %.2f %.2f'%(motor_fl, motor_fr, motor_bl, motor_br, motor_t))
-            print()
+            if counter % 20 == 0:
+                print('Depth:', depth)
+                print('Pinger:', pinger)
+                print('Pitch:', pitch)
+                print('Roll:', roll)
+                print('Yaw:', yaw)
+                print('Motors: %.2f %.2f %.2f %.2f %.2f'%(motor_fl, motor_fr, motor_bl, motor_br, motor_t))
+                print()
             time.sleep(0.1)
     except KeyboardInterrupt:
         pass
