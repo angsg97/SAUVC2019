@@ -21,6 +21,7 @@ def main():
     try:
         while True:
             print("yaw = ", imu.get_yaw())
+            print("yaw2 = ", imu.get_yaw2())
             print("pitch = ", imu.get_pitch())
             print("roll = ", imu.get_roll())
 

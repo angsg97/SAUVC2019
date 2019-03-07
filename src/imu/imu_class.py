@@ -33,6 +33,8 @@ class IMU(threading.Thread):
         self.port = port
 
         self.yaw = 0
+        self.yaw_integrated = 0
+        self.last_integration_time = 0
         self.delta_yaw = 0
         self.pitch = 0
         self.roll = 0
@@ -65,6 +67,12 @@ class IMU(threading.Thread):
             self.accx, self.accy, self.accz = self.get_converted_parse()
             self.output_parser("Angular Rate:")
             self.angx, self.angy, self.angz = self.get_converted_parse()
+
+            if self.last_integration_time == 0:
+                self.last_integration_time = time.time()
+            self.yaw_integrated += self.angx * (time.time() - self.last_integration_time)
+            self.last_integration_time = time.time()
+
             self.output_parser("YawPitchRoll:")
             self.yaw, self.pitch, self.roll = self.get_converted_parse()
             self.output_parser("Magnetic:")
@@ -95,6 +103,12 @@ class IMU(threading.Thread):
 
     def reset_yaw(self, new_yaw=0):
         self.delta_yaw = self.yaw - new_yaw
+
+    def get_yaw2(self):
+        return (self.yaw_integrated + 180) % 360 - 180
+
+    def reset_yaw2(self, new_yaw=0):
+        self.yaw_integrated = new_yaw
 
     def get_pitch(self):
         return self.pitch
