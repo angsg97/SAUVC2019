@@ -40,8 +40,8 @@ class MCU(Thread):
                 response = "{},{},{},{},{}\n".format(
                     self.convert(-self.m_front_left),
                     self.convert(-self.m_front_right),
-                    self.convert(self.m_back_left),
-                    self.convert(self.m_back_right),
+                    self.convert(-self.m_back_left),
+                    self.convert(-self.m_back_right),
                     self.convert(self.m_tail))
                 response = response.encode('utf-8')
                 server.offer_data(r, response)

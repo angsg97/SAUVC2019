@@ -20,9 +20,18 @@ def main():
     # read arguments
     ap = argparse.ArgumentParser()
     ap.add_argument("-s", "--speed")
+    ap.add_argument("-a", "--angle")
     args = vars(ap.parse_args())
 
-    speed = ap.get_default('speed', 0)
+    speed = args.get('speed', 0)
+    if speed is None:
+        speed = 0
+    speed = float(speed)
+
+    angle = args.get('angle', 0)
+    if angle is None:
+        angle = 0
+    angle = float(angle)
 
     # inits MCU
     mcu = MCU(2222)
@@ -30,17 +39,26 @@ def main():
     # inits IMU
     imu = IMU("/dev/ttyUSB_IMU")
 
-    imu.reset_yaw()
+    mcu.start()
+    imu.start()
+
+    time.sleep(2)
+    imu.delta_yaw = imu.get_yaw()
+    print('Target yaw: ', imu.delta_yaw)
+
+    mcu.wait()
 
     pidR = pidRoll(1, 0, 0) # 5, 0.1 , 5
     pidP = pidPitch(1, 0, 0)# 5 ,0.1 ,8
     pidD = pidDepth(1, 0, 0)
-    pidY = pidYaw(1, 0, 0)
+    pidY = pidYaw(1, 0.2, 0)
     motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
 
     try:
         motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
+        counter = 0
         while True:
+            counter += 1
             depth = mcu.get_depth()
             pinger = mcu.get_angle()
             pitch = imu.get_pitch()
@@ -50,7 +68,7 @@ def main():
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
             pidD.getSetValues(70-depth)
-            pidY.getSetValues(yaw)
+            pidY.getSetValues(-yaw)
             finalPidValues = add_list(pidR.start(), pidP.start(), pidD.start(), pidY.start())
 
             sentValues  = []
@@ -67,14 +85,15 @@ def main():
             # Put control codes here
 
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
-
-            print('Depth:', depth)
-            print('Pinger:', pinger)
-            print('Pitch:', pitch)
-            print('Roll:', roll)
-            print('Yaw:', yaw)
-            print('Motors: %.2f %.2f %.2f %.2f %.2f'%(motor_fl, motor_fr, motor_bl, motor_br, motor_t))
-            print()
+            
+            if counter % 20 == 0:
+                print('Depth:', depth)
+                print('Pinger:', pinger)
+                print('Pitch:', pitch)
+                print('Roll:', roll)
+                print('Yaw:', yaw)
+                print('Motors: %.2f %.2f %.2f %.2f %.2f'%(motor_fl, motor_fr, motor_bl, motor_br, motor_t))
+                print()
             time.sleep(0.1)
     except KeyboardInterrupt:
         pass
