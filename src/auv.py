@@ -64,6 +64,7 @@ def main():
     time.sleep(2)
     imu.delta_yaw = imu.get_yaw()
     print('Target yaw: ', imu.delta_yaw)
+    mcu.wait()
 
     pidR = pidRoll(1, 0, 0) # 5, 0.1 , 5
     pidP = pidPitch(1, 0, 0)# 5 ,0.1 ,8
@@ -82,7 +83,9 @@ def main():
             yaw = imu.get_yaw()
 
             if gate is None:
-                gate = yaw / 3
+                gate = yaw
+            else:
+                gate /= 5
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
