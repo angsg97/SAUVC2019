@@ -27,13 +27,20 @@ def main():
                     help="index of camera")
     ap.add_argument("-o", "--output",
                     help="path to save the video")
+    ap.add_argument("-s", "--speed")
     args = vars(ap.parse_args())
+
     if args.get("video", False):
         vs = args.get("video", False)
     elif args.get("camera", False):
         vs = int(args.get("camera", False))
     else:
         vs = 0
+    
+    speed = args.get('speed', 0)
+    if speed is None:
+        speed = 0
+    speed = float(speed)
 
     # inits CV
     cv = CVManager(vs,                  # choose the first web camera as the source
@@ -53,9 +60,10 @@ def main():
     cv.start()
     imu.start()
     mcu.start()
-    mcu.wait()
 
-    imu.reset_yaw()
+    time.sleep(2)
+    imu.delta_yaw = imu.get_yaw()
+    print('Target yaw: ', imu.delta_yaw)
 
     pidR = pidRoll(1, 0, 0) # 5, 0.1 , 5
     pidP = pidPitch(1, 0, 0)# 5 ,0.1 ,8
@@ -74,10 +82,7 @@ def main():
             yaw = imu.get_yaw()
 
             if gate is None:
-                gate = yaw
-            else:
-                gate = 0
-                #imu.reset_yaw(gate)
+                gate = yaw / 3
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
@@ -87,13 +92,13 @@ def main():
 
             sentValues  = []
             for values in finalPidValues:
-                subValues = values #/ 4
+                subValues = values
                 sentValues.append(subValues)
 
             motor_fl = sentValues[0]
             motor_fr = sentValues[1]
-            motor_bl = sentValues[2]
-            motor_br = sentValues[3]
+            motor_bl = sentValues[2] + speed
+            motor_br = sentValues[3] + speed
             motor_t = sentValues[4]
 
             # Put control codes here
