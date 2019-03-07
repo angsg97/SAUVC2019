@@ -60,7 +60,7 @@ def main():
     pidR = pidRoll(1, 0, 0) # 5, 0.1 , 5
     pidP = pidPitch(1, 0, 0)# 5 ,0.1 ,8
     pidD = pidDepth(1, 0, 0)
-    pidY = pidYaw(1, 0, 0)
+    pidY = pidYaw(1, 0.2, 0)
     motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
 
     try:
@@ -73,16 +73,16 @@ def main():
             roll = imu.get_roll()
             yaw = imu.get_yaw()
 
-            if gate is None or True:
+            if gate is None:
                 gate = yaw
             else:
-                gate /= 4
-                imu.reset_yaw(gate)
+                gate = 0
+                #imu.reset_yaw(gate)
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
             pidD.getSetValues(70-depth)
-            pidY.getSetValues(gate)
+            pidY.getSetValues(-gate)
             finalPidValues = add_list(pidR.start(), pidP.start(), pidD.start(), pidY.start())
 
             sentValues  = []
