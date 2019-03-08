@@ -73,8 +73,9 @@ def main():
         motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
         counter = 0
         last_cv_gate = 0
-
+        yaw = 0
         state = 0
+        timer_for_state0 = time.time()
         timer_for_state1 = 0
         timer_for_state2 = 0
         # 0 -> go find the gate
@@ -100,7 +101,8 @@ def main():
 
                     if gate_size > 350:
                         state = 1
-
+                if time.time() - timer_for_state0 > 30:
+                    state = 1
                 print('Gate', gate)
                 print('GateSize', gate_size)
             # go straight
@@ -121,6 +123,7 @@ def main():
                 depth = mcu.get_depth()
                 pitch = imu.get_pitch()
                 roll = imu.get_roll()
+                print(gate, gate_size)
 
                 if gate is None: # just go straight
                     yaw = imu.get_yaw2(2)
@@ -131,8 +134,9 @@ def main():
                     else:
                         yaw = imu.get_yaw2(1)
                 
-                if gate_size > 200:
-                    timer_for_state2 = time.time()
+                if not gate_size is None:
+                    if gate_size > 200:
+                        timer_for_state2 = time.time()
                 if timer_for_state2 != 0 and time.time() - timer_for_state2 > 10:
                     state = 3
             # surfacing
