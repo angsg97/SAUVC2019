@@ -68,32 +68,38 @@ def main():
     mcu.wait()
 
     pidR = pidRoll(1, 0, 0) # 5, 0.1 , 5
-    pidP = pidPitch(1, 0, 0)# 5 ,0.1 ,8
+    pidP = pidPitch(0.6, 0, 0)# 5 ,0.1 ,8
     pidD = pidDepth(1, 0, 0)
-    pidY = pidYaw(1, 0.2, 0)
+    pidY = pidYaw(1, 0.1, 0)
     motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
 
     try:
         motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
         counter = 0
+        gate_passed = False
         while True:
             counter += 1
-            gate = cv.get_result("GateTracker")[0] 
+            gate, _, gate_size = cv.get_result("GateTracker")
             depth = mcu.get_depth()
             pinger = mcu.get_angle()
             pitch = imu.get_pitch()
             roll = imu.get_roll()
-            yaw = imu.get_yaw()
-
-            if gate is None:
+            yaw = imu.get_yaw2()
+            
+            if gate_passed:
+                speed = set_speed
+            elif gate is None:
                 pass # yaw = yaw
                 speed = set_speed / 2
             else:
-                yaw = yaw + gate * 0.4
-                if abs(gate) < 20:
+                yaw = yaw - gate * 0.2
+                if abs(gate) < 40:
                     speed = set_speed
+                    imu.reset_yaw2()
                 else:
                     speed = 0
+                if gate_size > 350:
+                    gate_passed = True
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
@@ -116,13 +122,15 @@ def main():
 
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
 
-            if counter % 20 == 0:
+            if counter % 5 == 0:
                 print('Gate', gate)
+                print('GateSize', gate_size)
+                print('Passed?', gate_passed)
                 print('Depth:', depth)
                 print('Pinger:', pinger)
                 print('Pitch:', pitch)
                 print('Roll:', roll)
-                print('Yaw:', imu.get_yaw())
+                print('Yaw:', imu.get_yaw2())
                 print('Yaw_sent:', yaw)
                 print('Motors: %.2f %.2f %.2f %.2f %.2f'%(motor_fl, motor_fr, motor_bl, motor_br, motor_t))
                 print()

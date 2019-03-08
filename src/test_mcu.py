@@ -9,7 +9,7 @@ def main():
     mcu = MCU(2222)
     mcu.start()
     power = 0
-    step = 0.1
+    step = 0
 
     mcu.wait()
 

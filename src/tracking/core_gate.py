@@ -104,7 +104,7 @@ class GateTrackerV2(ITrackingCore):
                                 minLineLength, maxLineGap)
         # if not lines is None:
         gates = []
-        if not lines is None:
+        if not lines is None or len(lines) > 20:
             for line1 in lines:
                 line1 = TwoPointLine(line1[0])
                 cv2.line(lines_frame, (line1.x1, line1.y1),
