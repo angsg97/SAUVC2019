@@ -34,6 +34,7 @@ class IMU(threading.Thread):
 
         self.yaw = 0
         self.yaw_integrated = 0
+        self.yaw_integrated_calibration = [0 for _ in range(10)]
         self.last_integration_time = 0
         self.delta_yaw = 0
         self.pitch = 0
@@ -104,11 +105,11 @@ class IMU(threading.Thread):
     def reset_yaw(self, new_yaw=0):
         self.delta_yaw = self.yaw - new_yaw
 
-    def get_yaw2(self):
-        return (self.yaw_integrated + 180) % 360 - 180
+    def get_yaw2(self, index=0):
+        return (self.yaw_integrated - self.yaw_integrated_calibration[index] + 180) % 360 - 180
 
-    def reset_yaw2(self, new_yaw=0):
-        self.yaw_integrated = new_yaw
+    def reset_yaw2(self, new_yaw=0, index=0):
+        self.yaw_integrated_calibration[index] = self.yaw_integrated - new_yaw
 
     def get_pitch(self):
         return self.pitch
