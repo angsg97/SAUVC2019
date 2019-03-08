@@ -90,6 +90,7 @@ def main():
                 yaw = imu.get_yaw2(0)
                 speed = set_speed
             else:
+                speed = set_speed * 0.6
                 if gate != last_cv_gate:
                     imu.reset_yaw2(-gate * 0.2, 1)
                     last_cv_gate = gate
