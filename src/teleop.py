@@ -95,7 +95,7 @@ def main():
         # if the key is released more than 0.05s
         # stop the car
         if time.time() - t > 0.05:
-            action = (0, 0, 0, 0, 0)
+            action = (0, 0, 0.6, 0.6, 0)
         else:
             if key == 'm':
                 overall_speed += 0.01

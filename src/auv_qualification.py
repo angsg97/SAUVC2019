@@ -120,7 +120,7 @@ def main():
 
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
 
-            if counter % 5 == 0:
+            if counter % 20 == 0:
                 print('Gate', gate)
                 print('GateSize', gate_size)
                 print('Passed?', gate_passed)

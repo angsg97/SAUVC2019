@@ -92,7 +92,7 @@ def main():
             else:
                 speed = set_speed * 0.6
                 if gate != last_cv_gate:
-                    imu.reset_yaw2(-gate * 0.2, 1)
+                    imu.reset_yaw2(-gate * 0.1, 1)
                     last_cv_gate = gate
                 else:
                     yaw = imu.get_yaw2(1)
@@ -121,7 +121,7 @@ def main():
 
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
 
-            if counter % 5 == 0:
+            if counter % 20 == 0:
                 print('Gate', gate)
                 print('GateSize', gate_size)
                 print('Passed?', gate_passed)

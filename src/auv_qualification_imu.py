@@ -40,10 +40,10 @@ def main():
     imu.start()
     mcu.start()
 
-    pidR = pidRoll(1, 0, 0) # 5, 0.1 , 5
+    pidR = pidRoll(1, 0.2, 0) # 1, 0 , 0
     pidP = pidPitch(0.6, 0, 0)# 5 ,0.1 ,8
     pidD = pidDepth(1, 0, 0)
-    pidY = pidYaw(1, 0.1, 0)
+    pidY = pidYaw(1, 0.3, 0)
     motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
 
     try:
@@ -70,8 +70,8 @@ def main():
 
             motor_fl = sentValues[0]
             motor_fr = sentValues[1]
-            motor_bl = sentValues[2] + set_speed
-            motor_br = sentValues[3] + set_speed
+            motor_bl = set_speed #sentValues[2] + set_speed
+            motor_br = set_speed #sentValues[3] + set_speed
             motor_t = sentValues[4]
 
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
