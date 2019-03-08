@@ -88,9 +88,7 @@ def main():
 
             if gate_passed or gate is None: # just go straight
                 yaw = imu.get_yaw2(0)
-                speed = set_speed
             else:
-                speed = set_speed * 0.6
                 if gate != last_cv_gate:
                     imu.reset_yaw2(-gate * 0.1, 1)
                     last_cv_gate = gate
@@ -99,6 +97,11 @@ def main():
 
                 if gate_size > 350:
                     gate_passed = True
+
+            if abs(yaw) > 10:
+                speed = 0
+            else:
+                speed = set_speed
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
