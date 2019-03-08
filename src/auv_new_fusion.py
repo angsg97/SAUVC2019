@@ -87,11 +87,12 @@ def main():
             roll = imu.get_roll()
 
             if gate_passed or gate is None: # just go straight
-                yaw = imu.get_yaw2()
+                yaw = imu.get_yaw2(0)
                 speed = set_speed
             else:
                 if gate != last_cv_gate:
                     imu.reset_yaw2(-gate * 0.2, 1)
+                    last_cv_gate = gate
                 else:
                     yaw = imu.get_yaw2(1)
 
