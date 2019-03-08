@@ -2,6 +2,7 @@ import time
 import argparse
 from tracking import CVManager
 from tracking import GateTrackerV3
+from tracking import Flare
 from mcu import MCU
 from imu import IMU
 from pid import *
@@ -21,35 +22,28 @@ def add_list(list1, list2, list3 ,list4):
 def main():
     # read arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-v", "--video",
-                    help="path to the (optional) video file")
-    ap.add_argument("-c", "--camera",
-                    help="index of camera")
-    ap.add_argument("-o", "--output",
-                    help="path to save the video")
+    ap.add_argument("-o", "--output")
     ap.add_argument("-s", "--speed")
+    ap.add_argument("-t", "--time")
+    ap.add_argument("-a", "--angle")
     args = vars(ap.parse_args())
 
-    if args.get("video", False):
-        vs = args.get("video", False)
-    elif args.get("camera", False):
-        vs = int(args.get("camera", False))
-    else:
-        vs = 0
-    
     set_speed = args.get('speed', 0)
     if set_speed is None:
         set_speed = 0
     set_speed = float(set_speed)
-    speed = 0
+
+    time_after_passing = float(args.get('time', 0))
+    angle_to_turn = float(args.get('angle', 0))
 
     # inits CV
-    cv = CVManager(vs,                  # choose the first web camera as the source
+    cv = CVManager(0,                  # choose the first web camera as the source
                    enable_imshow=True,  # enable image show windows
                    server_port=3333,    # start stream server at port 3333
                    delay=5,
                    outputfolder=args.get("output"))
     cv.add_core("GateTracker", GateTrackerV3(), True)
+    cv.add_core("Flare", Flare(), False)
 
     # inits MCU
     mcu = MCU(2222)
@@ -61,6 +55,8 @@ def main():
     cv.start()
     imu.start()
     mcu.start()
+
+    imu.reset_yaw2(-angle_to_turn, 2) # for state 3
 
     time.sleep(2)
     imu.delta_yaw = imu.get_yaw()
@@ -76,30 +72,72 @@ def main():
     try:
         motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
         counter = 0
-        gate_passed = False
+        last_cv_gate = 0
+
+        state = 0
+        timer_for_state1 = 0
+        timer_for_state2 = 0
+        # 0 -> go find the gate
+        # 1 -> continue after passing the gate
+        # 2 -> find flare
+        # 3 -> surfacing
         while True:
             counter += 1
-            gate, _, gate_size = cv.get_result("GateTracker")
-            depth = mcu.get_depth()
-            pinger = mcu.get_angle()
-            pitch = imu.get_pitch()
-            roll = imu.get_roll()
-            yaw = imu.get_yaw2()
-            
-            if gate_passed:
-                speed = set_speed
-            elif gate is None:
-                pass # yaw = yaw
-                speed = set_speed / 2
-            else:
-                yaw = yaw - gate * 0.2
-                if abs(gate) < 40:
-                    speed = set_speed
-                    imu.reset_yaw2()
+            if state == 0:
+                gate, _, gate_size = cv.get_result("GateTracker")
+                depth = mcu.get_depth()
+                pitch = imu.get_pitch()
+                roll = imu.get_roll()
+
+                if gate is None: # just go straight
+                    yaw = imu.get_yaw2(0) # original heading
                 else:
-                    speed = 0
-                if gate_size > 350:
-                    gate_passed = True
+                    if gate != last_cv_gate:
+                        imu.reset_yaw2(-gate * 0.1, 1)
+                        last_cv_gate = gate
+                    else:
+                        yaw = imu.get_yaw2(1) # heading with CV
+
+                    if gate_size > 350:
+                        state = 1
+
+                print('Gate', gate)
+                print('GateSize', gate_size)
+            # go straight
+            elif state == 1:
+                if timer_for_state1 == 0: # first time
+                    cv.disable_core('GateTracker')
+                    timer_for_state1 = time.time()
+                elif time.time() - timer_for_state1 > time_after_passing:
+                    state = 2
+                    cv.enable_core('Flare')
+                depth = mcu.get_depth()
+                pitch = imu.get_pitch()
+                roll = imu.get_roll()
+                yaw = imu.get_yaw2(0) # original heading
+            # go to the flare
+            elif state == 2:
+                gate, _, gate_size = cv.get_result("Flare")
+                depth = mcu.get_depth()
+                pitch = imu.get_pitch()
+                roll = imu.get_roll()
+
+                if gate is None: # just go straight
+                    yaw = imu.get_yaw2(2)
+                else:
+                    if gate != last_cv_gate:
+                        imu.reset_yaw2(-gate * 0.1, 1)
+                        last_cv_gate = gate
+                    else:
+                        yaw = imu.get_yaw2(1)
+                
+                if gate_size > 200:
+                    timer_for_state2 = time.time()
+                if timer_for_state2 != 0 and time.time() - timer_for_state2 > 10:
+                    state = 3
+            # surfacing
+            else:
+                depth = 300
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
@@ -118,16 +156,11 @@ def main():
             motor_br = sentValues[3] + set_speed
             motor_t = sentValues[4]
 
-            # Put control codes here
-
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
 
-            if counter % 5 == 0:
-                print('Gate', gate)
-                print('GateSize', gate_size)
-                print('Passed?', gate_passed)
+            if counter % 20 == 0:
+                print('State:', state)
                 print('Depth:', depth)
-                print('Pinger:', pinger)
                 print('Pitch:', pitch)
                 print('Roll:', roll)
                 print('Yaw:', imu.get_yaw2())
