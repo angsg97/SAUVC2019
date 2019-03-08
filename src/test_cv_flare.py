@@ -28,6 +28,7 @@ def main():
     try:
         while True:
             time.sleep(0.1)
+            print(cv.get_result('Flare'))
     except KeyboardInterrupt:
         pass
     finally:

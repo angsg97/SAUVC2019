@@ -98,7 +98,7 @@ class Flare(ITrackingCore):
         total_score *= self.__sub_score(vec_L.angle(Vector(1,0)),90,10)
         total_score *= self.__sub_score(abs(line1.x1 - line2.x1),3,10)
         total_score *= self.__sub_score(abs(line1.y1 - line2.y2),3,10)
-        # total_score *= self.__sub_score(mean,220,50)
+        total_score *= self.__sub_score(mean,220,50)
         return total_score
 
     def find(self, frame):
@@ -142,6 +142,7 @@ class Flare(ITrackingCore):
                 final_line = final_line1
 
                 cv2.line(img, (final_line.x1, final_line.y1), (final_line.x2, final_line.y2), (0, 0, 255), 3)
-                print((final_line.x1, final_line.y1), (final_line.x2, final_line.y2))
-                print(keylist[-1])
-        return (0, 0, 0, [b,edges,img])
+                # print((final_line.x1, final_line.y1), (final_line.x2, final_line.y2))
+                # print(keylist[-1])
+                return ((final_line.x1 + final_line.x2)/2 - 320,0,abs(final_line.y1-final_line.y2),[b,edges,img])
+        return (None,None,None, [b,edges,img])
