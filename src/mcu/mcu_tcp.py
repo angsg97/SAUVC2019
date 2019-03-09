@@ -56,7 +56,7 @@ class MCU(Thread):
             return limit
         if value < -limit:
             return -limit
-        reutrn value
+        return value
 
     def set_motors(self, m_front_left, m_front_right, m_back_left, m_back_right, m_tail):
         self.m_front_left = self.check_range_float(m_front_left, 0.5)
