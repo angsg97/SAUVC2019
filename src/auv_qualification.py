@@ -62,20 +62,18 @@ def main():
     imu.start()
     mcu.start()
 
-    time.sleep(2)
-    imu.delta_yaw = imu.get_yaw()
-    print('Target yaw: ', imu.delta_yaw)
     mcu.wait()
 
-    pidR = pidRoll(1, 0, 0) # 5, 0.1 , 5
+    pidR = pidRoll(1, 0.2, 0) # 5, 0.1 , 5
     pidP = pidPitch(0.6, 0, 0)# 5 ,0.1 ,8
     pidD = pidDepth(1, 0, 0)
-    pidY = pidYaw(1, 0.1, 0)
+    pidY = pidYaw(1, 0.3, 0)
     motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
 
     try:
         motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
         counter = 0
+        last_cv_gate = 0
         gate_passed = False
         while True:
             counter += 1
@@ -84,22 +82,23 @@ def main():
             pinger = mcu.get_angle()
             pitch = imu.get_pitch()
             roll = imu.get_roll()
-            yaw = imu.get_yaw2()
-            
-            if gate_passed:
-                speed = set_speed
-            elif gate is None:
-                pass # yaw = yaw
-                speed = set_speed / 2
+
+            if gate_passed or gate is None: # just go straight
+                yaw = imu.get_yaw2(0)
             else:
-                yaw = yaw - gate * 0.2
-                if abs(gate) < 40:
-                    speed = set_speed
-                    imu.reset_yaw2()
+                if gate != last_cv_gate:
+                    imu.reset_yaw2(-gate * 0.1, 1)
+                    last_cv_gate = gate
                 else:
-                    speed = 0
+                    yaw = imu.get_yaw2(1)
+
                 if gate_size > 350:
                     gate_passed = True
+
+            if abs(yaw) > 10:
+                speed = 0
+            else:
+                speed = set_speed
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
@@ -117,6 +116,8 @@ def main():
             motor_bl = sentValues[2] + set_speed
             motor_br = sentValues[3] + set_speed
             motor_t = sentValues[4]
+
+            # Put control codes here
 
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
 

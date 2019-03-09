@@ -63,10 +63,10 @@ def main():
 
     cv.enable_core("GateTracker")
 
-    pidR = pidRoll(1, 0, 0) # 5, 0.1 , 5
+    pidR = pidRoll(1, 0.2, 0) # 5, 0.1 , 5
     pidP = pidPitch(0.6, 0, 0)# 5 ,0.1 ,8
     pidD = pidDepth(1, 0, 0)
-    pidY = pidYaw(1, 0.1, 0)
+    pidY = pidYaw(1, 0.3, 0)
     motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
 
     try:
