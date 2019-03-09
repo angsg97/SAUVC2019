@@ -24,16 +24,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-o", "--output")
     ap.add_argument("-s", "--speed")
-    ap.add_argument("-t", "--time")
+    ap.add_argument("-t", "--time") # time to turn after passing
+    ap.add_argument("-ft", "--forceturn") # time to force turn after launching, 30
     ap.add_argument("-a", "--angle")
+    ap.add_argument("-d", "--depth") # 80
     args = vars(ap.parse_args())
 
-    set_speed = args.get('speed', 0)
-    if set_speed is None:
-        set_speed = 0
-    set_speed = float(set_speed)
-
+    set_speed = float(args.get('speed', 0))
+    set_depth = float(args.get('depth', 0))
     time_after_passing = float(args.get('time', 0))
+    time_force_turn = float(args.get('forceturn', 0))
     angle_to_turn = float(args.get('angle', 0))
 
     # inits CV
@@ -42,7 +42,7 @@ def main():
                    server_port=3333,    # start stream server at port 3333
                    delay=5,
                    outputfolder=args.get("output"))
-    cv.add_core("GateTracker", GateTrackerV3(), True)
+    cv.add_core("GateTracker", GateTrackerV3(), False)
     cv.add_core("Flare", Flare(), False)
 
     # inits MCU
@@ -58,10 +58,9 @@ def main():
 
     imu.reset_yaw2(-angle_to_turn, 2) # for state 3
 
-    time.sleep(2)
-    imu.delta_yaw = imu.get_yaw()
-    print('Target yaw: ', imu.delta_yaw)
     mcu.wait()
+
+    cv.enable_core("GateTracker")
 
     pidR = pidRoll(1, 0, 0) # 5, 0.1 , 5
     pidP = pidPitch(0.6, 0, 0)# 5 ,0.1 ,8
@@ -74,6 +73,7 @@ def main():
         counter = 0
         last_cv_gate = 0
         yaw = 0
+        speed = 0
         state = 0
         timer_for_state0 = time.time()
         timer_for_state1 = 0
@@ -89,6 +89,7 @@ def main():
                 depth = mcu.get_depth()
                 pitch = imu.get_pitch()
                 roll = imu.get_roll()
+                speed = set_speed
 
                 if gate is None: # just go straight
                     yaw = imu.get_yaw2(0) # original heading
@@ -101,7 +102,7 @@ def main():
 
                     if gate_size > 350:
                         state = 1
-                if time.time() - timer_for_state0 > 30:
+                if time.time() - timer_for_state0 > time_force_turn:
                     state = 1
                 print('Gate', gate)
                 print('GateSize', gate_size)
@@ -117,12 +118,14 @@ def main():
                 pitch = imu.get_pitch()
                 roll = imu.get_roll()
                 yaw = imu.get_yaw2(0) # original heading
+                speed = set_speed
             # go to the flare
             elif state == 2:
                 gate, _, gate_size = cv.get_result("Flare")
                 depth = mcu.get_depth()
                 pitch = imu.get_pitch()
                 roll = imu.get_roll()
+                speed = set_speed
                 print(gate, gate_size)
 
                 if gate is None: # just go straight
@@ -133,7 +136,7 @@ def main():
                         last_cv_gate = gate
                     else:
                         yaw = imu.get_yaw2(1)
-                
+
                 if not gate_size is None:
                     if gate_size > 200:
                         timer_for_state2 = time.time()
@@ -141,11 +144,15 @@ def main():
                     state = 3
             # surfacing
             else:
-                depth = 300
+                depth = 500
+                pitch = imu.get_pitch()
+                roll = imu.get_roll()
+                yaw = 0
+                speed = 0
 
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
-            pidD.getSetValues(70-depth)
+            pidD.getSetValues(set_depth-depth)
             pidY.getSetValues(-yaw)
             finalPidValues = add_list(pidR.start(), pidP.start(), pidD.start(), pidY.start())
 
@@ -156,8 +163,8 @@ def main():
 
             motor_fl = sentValues[0]
             motor_fr = sentValues[1]
-            motor_bl = sentValues[2] + set_speed
-            motor_br = sentValues[3] + set_speed
+            motor_bl = sentValues[2] + speed
+            motor_br = sentValues[3] + speed
             motor_t = sentValues[4]
 
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
