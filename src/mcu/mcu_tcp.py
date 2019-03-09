@@ -6,6 +6,7 @@ other functions (set_depth and get_angle)just returns those variables and update
 '''
 import time
 import traceback
+import queue
 from threading import Thread
 from digi.xbee.devices import XBeeDevice
 
@@ -19,7 +20,8 @@ class MCU(Thread):
         self.m_back_left = 0
         self.m_back_right = 0
         self.m_tail = 0
-        self.depth = 0
+        self.depth_queue = queue.Queue(max_size=10)
+        self.last_depth = 0
         self.angle = 0
         self.port = port
         self.stopped = False
@@ -34,7 +36,7 @@ class MCU(Thread):
                 nums = r.split(',')
                 if len(nums) == 2:
                     self.connected = True
-                    self.depth = int(nums[0])
+                    self.depth_queue.put(int(nums[0]))
                     self.angle = int(nums[1])
                 response = "{},{},{},{},{}\n".format(
                     self.convert(-self.m_front_left),
@@ -68,7 +70,7 @@ class MCU(Thread):
         return self.angle
 
     def get_depth(self):
-        return self.depth
+        return sum(self.depth_queue) / len(self.depth_queue)
 
     def check_range(self, data):
         data = int(data)
