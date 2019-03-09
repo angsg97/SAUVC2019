@@ -27,6 +27,7 @@ def main():
     ap.add_argument("-s", "--speed")
     ap.add_argument("-t", "--time") # time to turn after passing
     ap.add_argument("-ft", "--forceturn") # time to force turn after launching, 30
+    ap.add_argument("-ft2", "--forceturn2") # time to force turn for state 2
     ap.add_argument("-a", "--angle")
     ap.add_argument("-d", "--depth") # 80
     args = vars(ap.parse_args())
@@ -35,6 +36,7 @@ def main():
     set_depth = float(args.get('depth', 0))
     time_after_passing = float(args.get('time', 0))
     time_force_turn = float(args.get('forceturn', 0))
+    time_force_turn_2 = float(args.get('--forceturn2', 0))
     angle_to_turn = float(args.get('angle', 0))
 
     # inits CV
@@ -79,6 +81,7 @@ def main():
         timer_for_state0 = time.time()
         timer_for_state1 = 0
         timer_for_state2 = 0
+        timer_for_state2_2 = 0
         # 0 -> go find the gate
         # 1 -> continue after passing the gate
         # 2 -> find flare
@@ -113,7 +116,8 @@ def main():
                     cv.disable_core('GateTracker')
                     timer_for_state1 = time.time()
                 elif time.time() - timer_for_state1 > time_after_passing:
-                    state = 2
+                    state = 
+                    timer_for_state2_2 = time.time()
                     cv.enable_core('Flare')
                 depth = mcu.get_depth()
                 pitch = imu.get_pitch()
@@ -139,9 +143,11 @@ def main():
                         yaw = imu.get_yaw2(1)
 
                 if not gate_size is None:
-                    if gate_size > 200:
+                    if gate_size > 100:
                         timer_for_state2 = time.time()
                 if timer_for_state2 != 0 and time.time() - timer_for_state2 > 10:
+                    state = 3
+                if time.time() - timer_for_state2_2 > time_force_turn_2:
                     state = 3
             # surfacing
             else:
