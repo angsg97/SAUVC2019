@@ -67,11 +67,14 @@ def main():
 
     time.sleep(3)
 
+    start_time = time.time()
+    depth_speed = 0
+
     cv.enable_core("GateTracker")
 
     pidR = pidRoll(1, 0.2, 0) # 5, 0.1 , 5
     pidP = pidPitch(0.6, 0, 0)# 5 ,0.1 ,8
-    pidD = pidDepth(1, 0, 0)
+    pidD = pidDepth(0, 0, 0)
     pidY = pidYaw(1, 0.3, 0)
     motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
 
@@ -163,6 +166,13 @@ def main():
                 yaw = 0
                 speed = 0
 
+            if state == 3:
+                depth_speed = 1
+            elif abs((time.time() - start_time) % 5) < 1:
+                depth_speed = 0.45
+            else:
+                depth_speed = 0
+
             pidR.getSetValues(roll)
             pidP.getSetValues(pitch)
             pidD.getSetValues(set_depth-depth)
@@ -174,11 +184,11 @@ def main():
                 subValues = values
                 sentValues.append(subValues)
 
-            motor_fl = sentValues[0]
-            motor_fr = sentValues[1]
+            motor_fl = sentValues[0] + depth_speed
+            motor_fr = sentValues[1] + depth_speed
             motor_bl = sentValues[2] + speed
             motor_br = sentValues[3] + speed
-            motor_t = sentValues[4]
+            motor_t = sentValues[4] + depth_speed
 
             mcu.set_motors(motor_fl, motor_fr, motor_bl, motor_br, motor_t)
 
