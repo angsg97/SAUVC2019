@@ -28,6 +28,7 @@ def main():
     ap.add_argument("-o", "--output",
                     help="path to save the video")
     ap.add_argument("-s", "--speed")
+    ap.add_argument("-t", "--time")
     args = vars(ap.parse_args())
 
     if args.get("video", False):
@@ -38,6 +39,11 @@ def main():
         vs = 0
     
     set_speed = args.get('speed', 0)
+    set_time = args.get('time', 0)
+
+    print('Speed', set_speed)
+    print('Time', set_time)
+
     if set_speed is None:
         set_speed = 0
     set_speed = float(set_speed)
@@ -78,7 +84,7 @@ def main():
         counter = 0
         last_cv_gate = 0
         gate_passed = False
-        while True:
+        while time.time() - start_time < set_time:
             counter += 1
             gate, _, gate_size = cv.get_result("GateTracker")
             depth = mcu.get_depth()
@@ -145,6 +151,7 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
+        mcu.set_motors(0, 0, 0, 0, 0)
         print("Stopping remaining threads...")
         cv.stop()
         imu.stop()
