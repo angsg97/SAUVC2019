@@ -50,13 +50,20 @@ class MCU(Thread):
 
     def stop(self):
         self.stopped = True
+    
+    def check_range_float(self, value, limit):
+        if value > limit:
+            return limit
+        if value < -limit:
+            return -limit
+        reutrn value
 
     def set_motors(self, m_front_left, m_front_right, m_back_left, m_back_right, m_tail):
-        self.m_front_left = m_front_left
-        self.m_front_right = m_front_right
-        self.m_back_left = m_back_left
-        self.m_back_right = m_back_right
-        self.m_tail = m_tail
+        self.m_front_left = self.check_range_float(m_front_left, 0.5)
+        self.m_front_right = self.check_range_float(m_front_right, 0.5)
+        self.m_back_left = self.check_range_float(m_back_left, 1)
+        self.m_back_right = self.check_range_float(m_back_right, 1)
+        self.m_tail = self.check_range_float(m_tail, 0.5)
 
     def get_angle(self):
         return self.angle
