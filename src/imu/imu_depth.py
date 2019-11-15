@@ -27,7 +27,3 @@ def get_depth():
 while True:
     print("Depth:" +str( get_depth()))
 
-
-
-
-

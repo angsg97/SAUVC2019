@@ -31,7 +31,7 @@ class Vector:
 
     def add_vector(self, other_vec):
         return Vector((self.x + other_vec.x), (self.y + other_vec.y))
-
+__
 
 class Flare(ITrackingCore):
     def __inital_filter(self,line):
@@ -89,17 +89,17 @@ class Flare(ITrackingCore):
         total_score *= self.__sub_score(vec_L.angle(vec_R), 0, 10)
         total_score *= self.__sub_score(vec_L.angle(Vector(1,0)),90,10)
         total_score *= self.__sub_score(abs(line1.x1 - line2.x1),3,10)
-        total_score *= self.__sub_score(abs(line1.y1 - line2.y2),3,10)
+        total_score *= self.__sub_score(abs(line1.y1 - line2.y1),3,10)
         total_score *= self.__sub_score(mean,60,15)
         return total_score
 
-        total_score = 1
-        total_score *= self.__sub_score(vec_L.angle(vec_R), 0, 10)
-        total_score *= self.__sub_score(vec_L.angle(Vector(1,0)),90,10)
-        total_score *= self.__sub_score(abs(line1.x1 - line2.x1),3,10)
-        total_score *= self.__sub_score(abs(line1.y1 - line2.y2),3,10)
-        total_score *= self.__sub_score(mean,220,50)
-        return total_score
+        # total_score = 1
+        # total_score *= self.__sub_score(vec_L.angle(vec_R), 0, 10)
+        # total_score *= self.__sub_score(vec_L.angle(Vector(1,0)),90,10)
+        # total_score *= self.__sub_score(abs(line1.x1 - line2.x1),3,10)
+        # total_score *= self.__sub_score(abs(line1.y1 - line2.y1),3,10)
+        # total_score *= self.__sub_score(mean,220,50)
+        # return total_score
 
     def find(self, frame):
         img = cv2.resize(frame,(640,360),0)
