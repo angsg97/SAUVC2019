@@ -45,7 +45,7 @@ def main():
     start_time = time.time()
     depth_speed = 0
 
-    pidR = pidRoll(1, 0.2, 0) # 1, 0 , 0
+    pidR = pidRoll(0.4, 0, 0) # 1, 0 , 0
     pidP = pidPitch(0.6, 0, 0)# 5 ,0.1 ,8
     pidD = pidDepth(0, 0, 0)
     pidY = pidYaw(1, 0.4, 0)
