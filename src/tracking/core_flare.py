@@ -31,7 +31,7 @@ class Vector:
 
     def add_vector(self, other_vec):
         return Vector((self.x + other_vec.x), (self.y + other_vec.y))
-__
+
 
 class Flare(ITrackingCore):
     def __inital_filter(self,line):
