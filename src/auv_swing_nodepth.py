@@ -72,10 +72,10 @@ def main():
 
     cv.enable_core("GateTracker")
 
-    pidR = pidRoll(1, 0.2, 0) # 5, 0.1 , 5
+    pidR = pidRoll(0.7, 0, 0) # 5, 0.1 , 5
     pidP = pidPitch(0.6, 0, 0)# 5 ,0.1 ,8
     pidD = pidDepth(0, 0, 0)
-    pidY = pidYaw(1, 0.3, 0)
+    pidY = pidYaw(1, 0.2, 0)
     motor_fl, motor_fr, motor_bl, motor_br, motor_t = 0, 0, 0, 0, 0
 
     try:
@@ -102,7 +102,7 @@ def main():
                 roll = imu.get_roll()
                 speed = set_speed
 
-                if gate is None: # just go straight
+                if gate is None or True: # just go straight
                     yaw = imu.get_yaw2(0) # original heading
                 else:
                     if gate != last_cv_gate:
@@ -168,7 +168,7 @@ def main():
 
             if state == 3:
                 depth_speed = 1
-            elif abs((time.time() - start_time) % 5) < 1:
+            elif abs((time.time() - start_time) % 5) < 1.5 and time.time() - start_time > 2:
                 depth_speed = 0.45
             else:
                 depth_speed = 0
